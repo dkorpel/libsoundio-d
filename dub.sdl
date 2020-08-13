@@ -1,0 +1,149 @@
+name "libsoundio-d"
+description "D translation of libsoundio"
+authors "dkorpel"
+copyright "Copyright © 2020, dkorpel"
+license "MIT"
+targetName "libsoundio-d"
+targetPath "build"
+targetType "library"
+
+buildOptions "betterC"
+dflags "-preview=dip1000" "-preview=dip25"
+dflags "-preview=fieldwise"
+dflags "-preview=markdown"
+dflags "-preview=fixAliasThis"
+dflags "-preview=intpromote"
+dflags "-preview=dtorfields"
+dflags "-mixin=build/mixin.d"
+
+sourcePaths // no default sourcepath
+sourceFiles "source/soundio/api.d"
+sourceFiles "source/soundio/atomics.d"
+sourceFiles "source/soundio/channel_layout.d"
+sourceFiles "source/soundio/config.d" // enums only
+sourceFiles "source/soundio/list.d" // templates only
+sourceFiles "source/soundio/dummy.d"
+sourceFiles "source/soundio/os.d"
+sourceFiles "source/soundio/package.d"
+sourceFiles "source/soundio/ring_buffer.d"
+sourceFiles "source/soundio/soundio.d"
+sourceFiles "source/soundio/soundio_internal.d" // list template instantiations are in here sometimes
+sourceFiles "source/soundio/soundio_private.d"
+sourceFiles "source/soundio/util.d"
+
+configuration "linux" {
+	platforms "linux"
+
+	libs "asound"
+	versions "SOUNDIO_HAVE_ALSA"
+	sourceFiles "source/soundio/alsa.d"
+
+	libs "pulse"
+	versions "SOUNDIO_HAVE_PULSEAUDIO"
+	sourceFiles "source/soundio/pulseaudio.d"
+}
+
+configuration "windows" {
+	platforms "windows"
+	versions "SOUNDIO_OS_WINDOWS"
+	versions "SOUNDIO_HAVE_WASAPI"
+	sourceFiles "source/soundio/wasapi.d"
+	sourceFiles "source/soundio/headers/wasapiheader.d"
+
+	libs "Ole32" // CoCreateInstance, CoTaskMemFree, PropVariantClear
+}
+
+configuration "dummy" {
+	sourceFiles "source/soundio/dummy.d" // redundant, but config can't be empty
+}
+
+configuration "jack" {
+	versions "SOUNDIO_HAVE_JACK"
+	sourceFiles "source/soundio/jack.d"
+}
+
+// Examples
+subPackage {
+	name "sine"
+	targetPath "build"
+	targetType "executable"
+	sourcePaths
+	sourceFiles "examples/sio_sine.d"
+	dependency "libsoundio-d" version="*"
+}
+
+subPackage {
+	name "list-devices"
+	targetPath "build"
+	targetType "executable"
+	sourcePaths
+	sourceFiles "examples/sio_list_devices.d"
+	dependency "libsoundio-d" version="*"
+}
+
+subPackage {
+	name "record"
+	targetPath "build"
+	targetType "executable"
+	sourcePaths
+	sourceFiles "examples/sio_record.d"
+	dependency "libsoundio-d" version="*"
+	buildRequirements "allowWarnings" // statements after main-loop not reachable
+}
+
+subPackage {
+	name "microphone"
+	targetPath "build"
+	targetType "executable"
+	sourcePaths
+	sourceFiles "examples/sio_microphone.d"
+	dependency "libsoundio-d" version="*"
+	buildRequirements "allowWarnings" // statement after main-loop not reachable
+}
+
+// Tests
+subPackage {
+	name "backend-disconnect-recover"
+	targetPath "build"
+	targetType "executable"
+	sourcePaths
+	sourceFiles "test/backend_disconnect_recover.d"
+	dependency "libsoundio-d" version="*"
+}
+
+subPackage {
+	name "latency"
+	targetPath "build"
+	targetType "executable"
+	sourcePaths
+	sourceFiles "test/latency.d"
+	dependency "libsoundio-d" version="*"
+	buildRequirements "allowWarnings" // statement after main-loop not reachable
+}
+
+subPackage {
+	name "overflow"
+	targetPath "build"
+	targetType "executable"
+	sourcePaths
+	sourceFiles "test/overflow.d"
+	dependency "libsoundio-d" version="*"
+}
+
+subPackage {
+	name "underflow"
+	targetPath "build"
+	targetType "executable"
+	sourcePaths
+	sourceFiles "test/underflow.d"
+	dependency "libsoundio-d" version="*"
+}
+
+subPackage {
+	name "unit-tests"
+	targetPath "build"
+	targetType "executable"
+	sourcePaths
+	sourceFiles "test/unit_tests.d"
+	dependency "libsoundio-d" version="*"
+}
