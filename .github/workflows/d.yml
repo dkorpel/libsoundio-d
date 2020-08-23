@@ -11,7 +11,7 @@ jobs:
         strategy:
             matrix:
                 os: [windows-latest]
-                dc: [dmd-latest, ldc-latest, dmd-2.085.0, ldc-1.17.0]
+                dc: [dmd-latest, ldc-latest, dmd-2.089.0, ldc-1.19.0]
         runs-on: ${{ matrix.os }}
         steps:
             - uses: actions/checkout@v2
@@ -29,7 +29,7 @@ jobs:
         strategy:
             matrix:
                 os: [ubuntu-latest]
-                dc: [dmd-latest, ldc-latest, dmd-2.085.0, ldc-1.17.0]
+                dc: [dmd-latest, ldc-latest, dmd-2.089.0, ldc-1.19.0]
         runs-on: ${{ matrix.os }}
         steps:
             - uses: actions/checkout@v2
