@@ -6,11 +6,11 @@ on:
     branches: [ master ]
 
 jobs:
-    test:
-        name: Run unittests
+    test-windows:
+        name: Run unittests on windows
         strategy:
             matrix:
-                os: [ubuntu-latest, windows-latest]
+                os: [windows-latest]
                 dc: [dmd-latest, ldc-latest, dmd-2.085.0, ldc-1.17.0]
         runs-on: ${{ matrix.os }}
         steps:
@@ -23,3 +23,25 @@ jobs:
 
             - name: Invoke Dub
               run: dub -q run libsoundio-d:unit-tests
+
+    test-linux:
+        name: Run unittests on linux
+        strategy:
+            matrix:
+                os: [ubuntu-latest]
+                dc: [dmd-latest, ldc-latest, dmd-2.085.0, ldc-1.17.0]
+        runs-on: ${{ matrix.os }}
+        steps:
+            - uses: actions/checkout@v2
+
+            - name: Install ALSA and PulseAudio
+              run: sudo apt-get install libasound2 pulseaudio
+
+            - name: Install D compiler
+              uses: dlang-community/setup-dlang@v1
+              with:
+                  compiler: ${{ matrix.dc }}
+
+            - name: Invoke Dub
+              run: dub -q run libsoundio-d:unit-tests
+

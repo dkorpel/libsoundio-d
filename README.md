@@ -1,5 +1,5 @@
 # libsoundio-d
-Translation from C to D of [libsoundio](https://github.com/andrewrk/libsoundio) [commit a46b0f2](https://github.com/andrewrk/libsoundio/commit/a46b0f21c397cd095319f8c9feccf0f1e50e31ba).
+Translation from C to D of [libsoundio](https://github.com/andrewrk/libsoundio) ([commit a46b0f2](https://github.com/andrewrk/libsoundio/commit/a46b0f21c397cd095319f8c9feccf0f1e50e31ba)).
 
 Libsoundio is a library for cross-platform real-time audio input and output.
 
