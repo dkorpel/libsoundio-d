@@ -45,7 +45,6 @@ configuration "linux" {
 
 configuration "windows" {
 	platforms "windows"
-	versions "SOUNDIO_OS_WINDOWS"
 	versions "SOUNDIO_HAVE_WASAPI"
 	sourceFiles "source/soundio/wasapi.d"
 	sourceFiles "source/soundio/headers/wasapiheader.d"

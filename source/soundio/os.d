@@ -17,15 +17,10 @@ struct SoundIoOsMirroredMemory {
     void* priv;
 }
 
-//version (SOUNDIO_OS_WINDOWS) {
 version (Windows) {
     public import core.sys.windows.windows;
     public import core.sys.windows.mmsystem;
     public import core.sys.windows.objbase;
-    //import core.sys.windows.
-    version = SOUNDIO_OS_WINDOWS;
-    //public import mmsystem;
-    //public import objbase;
 
     alias INIT_ONCE = void*;
     alias CONDITION_VARIABLE = void*;
@@ -70,7 +65,6 @@ version(OSX) {
 
 version(SOUNDIO_OS_KQUEUE) {
     public import core.sys.posix.sys.types;
-    //public import core.sys.event;
     public import core.sys.posix.sys.time;
 }
 
@@ -80,7 +74,7 @@ version (OSX) {
 }
 
 struct SoundIoOsThread {
-    version (SOUNDIO_OS_WINDOWS) {
+    version(Windows) {
         HANDLE handle;
         DWORD id;
     } else {
@@ -95,7 +89,7 @@ struct SoundIoOsThread {
 }
 
 struct SoundIoOsMutex {
-    version (SOUNDIO_OS_WINDOWS) {
+    version(Windows) {
         CRITICAL_SECTION id;
     } else {
         pthread_mutex_t id;
@@ -108,7 +102,7 @@ version (SOUNDIO_OS_KQUEUE) {
     struct SoundIoOsCond {
         int kq_id;
     }
-} else version (SOUNDIO_OS_WINDOWS) {
+} else version(Windows) {
     struct SoundIoOsCond {
         CONDITION_VARIABLE id;
         CRITICAL_SECTION default_cs_id;
@@ -126,7 +120,7 @@ version (SOUNDIO_OS_KQUEUE) {
     }
 }
 
-version (SOUNDIO_OS_WINDOWS) {
+version(Windows) {
     static INIT_ONCE win32_init_once = INIT_ONCE_STATIC_INIT;
     static double win32_time_resolution;
     static SYSTEM_INFO win32_system_info;
@@ -141,7 +135,7 @@ version (SOUNDIO_OS_WINDOWS) {
 static int page_size;
 
 double soundio_os_get_time() {
-    version (SOUNDIO_OS_WINDOWS) {
+    version(Windows) {
         ulong time;
         QueryPerformanceCounter(cast(LARGE_INTEGER*) &time);
         return time * win32_time_resolution;
@@ -164,7 +158,7 @@ double soundio_os_get_time() {
     }
 }
 
-version (SOUNDIO_OS_WINDOWS) {
+version(Windows) {
     extern(Windows) static DWORD run_win32_thread(LPVOID userdata) {
         SoundIoOsThread* thread = cast(SoundIoOsThread*)userdata;
         HRESULT err = CoInitializeEx(null, COINIT_APARTMENTTHREADED);
@@ -199,7 +193,7 @@ int soundio_os_thread_create(threadFunc run, void* arg, warningFunc emit_rtprio_
     thread.run = run;
     thread.arg = arg;
 
-version (SOUNDIO_OS_WINDOWS) {
+version(Windows) {
     thread.handle = CreateThread(null, 0, &run_win32_thread, thread, 0, &thread.id);
     if (!thread.handle) {
         soundio_os_thread_destroy(thread);
@@ -259,7 +253,7 @@ void soundio_os_thread_destroy(SoundIoOsThread* thread) {
     if (!thread)
         return;
 
-version (SOUNDIO_OS_WINDOWS) {
+version(Windows) {
     if (thread.handle) {
         DWORD err = WaitForSingleObject(thread.handle, INFINITE);
         assert(err != WAIT_FAILED);
@@ -287,7 +281,7 @@ SoundIoOsMutex* soundio_os_mutex_create() {
         return null;
     }
 
-version (SOUNDIO_OS_WINDOWS) {
+version(Windows) {
     InitializeCriticalSection(&mutex.id);
 } else {
     if (auto err = pthread_mutex_init(&mutex.id, null)) {
@@ -304,7 +298,7 @@ void soundio_os_mutex_destroy(SoundIoOsMutex* mutex) {
     if (!mutex)
         return;
 
-version (SOUNDIO_OS_WINDOWS) {
+version(Windows) {
     DeleteCriticalSection(&mutex.id);
 } else {
     if (mutex.id_init) {
@@ -316,7 +310,7 @@ version (SOUNDIO_OS_WINDOWS) {
 }
 
 void soundio_os_mutex_lock(SoundIoOsMutex* mutex) {
-version (SOUNDIO_OS_WINDOWS) {
+version(Windows) {
     EnterCriticalSection(&mutex.id);
 } else {
     assert_no_err(pthread_mutex_lock(&mutex.id));
@@ -324,7 +318,7 @@ version (SOUNDIO_OS_WINDOWS) {
 }
 
 void soundio_os_mutex_unlock(SoundIoOsMutex* mutex) {
-version (SOUNDIO_OS_WINDOWS) {
+version(Windows) {
     LeaveCriticalSection(&mutex.id);
 } else {
     assert_no_err(pthread_mutex_unlock(&mutex.id));
@@ -339,7 +333,7 @@ SoundIoOsCond* soundio_os_cond_create() {
         return null;
     }
 
-version (SOUNDIO_OS_WINDOWS) {
+version(Windows) {
     InitializeConditionVariable(&cond.id);
     InitializeCriticalSection(&cond.default_cs_id);
 } else version (SOUNDIO_OS_KQUEUE) {
@@ -378,7 +372,7 @@ void soundio_os_cond_destroy(SoundIoOsCond* cond) {
     if (!cond)
         return;
 
-version (SOUNDIO_OS_WINDOWS) {
+version(Windows) {
     DeleteCriticalSection(&cond.default_cs_id);
 } else version (SOUNDIO_OS_KQUEUE) {
     close(cond.kq_id);
@@ -399,7 +393,7 @@ version (SOUNDIO_OS_WINDOWS) {
 }
 
 void soundio_os_cond_signal(SoundIoOsCond* cond, SoundIoOsMutex* locked_mutex) {
-version (SOUNDIO_OS_WINDOWS) {
+version(Windows) {
     if (locked_mutex) {
         WakeConditionVariable(&cond.id);
     } else {
@@ -435,7 +429,7 @@ version (SOUNDIO_OS_WINDOWS) {
 }
 
 void soundio_os_cond_timed_wait(SoundIoOsCond* cond, SoundIoOsMutex* locked_mutex, double seconds) {
-version (SOUNDIO_OS_WINDOWS) {
+version(Windows) {
     CRITICAL_SECTION* target_cs;
     if (locked_mutex) {
         target_cs = &locked_mutex.id;
@@ -496,7 +490,7 @@ version (SOUNDIO_OS_WINDOWS) {
 }
 
 void soundio_os_cond_wait(SoundIoOsCond* cond, SoundIoOsMutex* locked_mutex) {
-version (SOUNDIO_OS_WINDOWS) {
+version(Windows) {
     CRITICAL_SECTION* target_cs;
     if (locked_mutex) {
         target_cs = &locked_mutex.id;
@@ -544,7 +538,7 @@ version (SOUNDIO_OS_WINDOWS) {
 }
 
 static int internal_init() {
-version (SOUNDIO_OS_WINDOWS) {
+version(Windows) {
     ulong frequency;
     if (QueryPerformanceFrequency(cast(LARGE_INTEGER*) &frequency)) {
         win32_time_resolution = 1.0 / cast(double) frequency;
@@ -555,15 +549,15 @@ version (SOUNDIO_OS_WINDOWS) {
     page_size = win32_system_info.dwAllocationGranularity;
 } else {
     page_size = cast(int) sysconf(_SC_PAGESIZE);
-version (OSX) {
-    host_get_clock_service(mach_host_self(), SYSTEM_CLOCK, &cclock);
-}
+    version (OSX) {
+        host_get_clock_service(mach_host_self(), SYSTEM_CLOCK, &cclock);
+    }
 }
     return 0;
 }
 
 int soundio_os_init() {
-version (SOUNDIO_OS_WINDOWS) {
+version(Windows) {
     PVOID lpContext;
     BOOL pending;
 
@@ -605,7 +599,7 @@ pragma(inline, true) static size_t ceil_dbl_to_size_t(double x) {
 int soundio_os_init_mirrored_memory(SoundIoOsMirroredMemory* mem, size_t requested_capacity) {
     size_t actual_capacity = ceil_dbl_to_size_t(requested_capacity / cast(double)page_size) * page_size;
 
-    version (SOUNDIO_OS_WINDOWS) {
+    version(Windows) {
         BOOL ok;
         HANDLE hMapFile = CreateFileMapping(INVALID_HANDLE_VALUE, null, PAGE_READWRITE, 0, cast(int) (actual_capacity * 2), null);
         if (!hMapFile)
@@ -719,7 +713,7 @@ int soundio_os_init_mirrored_memory(SoundIoOsMirroredMemory* mem, size_t request
 void soundio_os_deinit_mirrored_memory(SoundIoOsMirroredMemory* mem) {
     if (!mem.address)
         return;
-    version (SOUNDIO_OS_WINDOWS) {
+    version(Windows) {
         BOOL ok;
         ok = UnmapViewOfFile(mem.address);
         assert(ok);
