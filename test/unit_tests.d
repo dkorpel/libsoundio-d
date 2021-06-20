@@ -39,21 +39,23 @@ private void test_create_outstream() {
     ok_or_panic(soundio_connect(soundio));
     soundio_flush_events(soundio);
     int default_out_device_index = soundio_default_output_device_index(soundio);
-    assert(default_out_device_index >= 0);
-    SoundIoDevice* device = soundio_get_output_device(soundio, default_out_device_index);
-    assert(device);
-    SoundIoOutStream* outstream = soundio_outstream_create(device);
-    outstream.format = SoundIoFormatFloat32NE;
-    outstream.sample_rate = 48000;
-    outstream.layout = device.layouts[0];
-    outstream.software_latency = 0.1;
-    outstream.write_callback = &write_callback;
-    outstream.error_callback = &error_callback;
+    // On Github actions, there is no output device
+    if (default_out_device_index >= 0) {
+        SoundIoDevice* device = soundio_get_output_device(soundio, default_out_device_index);
+        assert(device);
+        SoundIoOutStream* outstream = soundio_outstream_create(device);
+        outstream.format = SoundIoFormatFloat32NE;
+        outstream.sample_rate = 48000;
+        outstream.layout = device.layouts[0];
+        outstream.software_latency = 0.1;
+        outstream.write_callback = &write_callback;
+        outstream.error_callback = &error_callback;
 
-    ok_or_panic(soundio_outstream_open(outstream));
+        ok_or_panic(soundio_outstream_open(outstream));
 
-    soundio_outstream_destroy(outstream);
-    soundio_device_unref(device);
+        soundio_outstream_destroy(outstream);
+        soundio_device_unref(device);
+    }
     soundio_destroy(soundio);
     soundio = null;
     soundio_destroy(soundio);
@@ -221,35 +223,25 @@ struct Test {
     void function() @nogc nothrow fn;
 }
 
-private Test* tests = [
+private immutable Test[] tests = [
     Test("os_get_time", &test_os_get_time),
     Test("create output stream", &test_create_outstream),
     Test("mirrored memory", &test_mirrored_memory),
     Test("soundio_device_nearest_sample_rate", &test_nearest_sample_rate),
     Test("ring buffer basic", &test_ring_buffer_basic),
     Test("ring buffer threaded", &test_ring_buffer_threaded),
-    Test(null, null),
 ];
 
-private void exec_test(Test* test) {
-    printf_stderr("testing %s...", test.name);
+private void exec_test(in Test test) {
+    printf("testing %s...\n", test.name);
     test.fn();
-    printf_stderr("OK\n");
+    printf("OK\n");
 }
 
-int main(int argc, char** argv) {
-    const(char)* match = null;
-
-    if (argc == 2)
-        match = argv[1];
-
-    Test* test = &tests[0];
-
-    while (test.name) {
-        if (!match || strstr(test.name, match))
-            exec_test(test);
-        test += 1;
+extern(D) int main(string[] args) {
+    printf("running unittests\n");
+    foreach(test; tests) {
+        exec_test(test);
     }
-
     return 0;
 }

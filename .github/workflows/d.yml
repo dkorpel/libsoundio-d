@@ -22,7 +22,7 @@ jobs:
                   compiler: ${{ matrix.dc }}
 
             - name: Invoke Dub
-              run: dub -q run libsoundio-d:unit-tests
+              run: dub run libsoundio-d:unit-tests
 
     test-linux:
         name: Run unittests on linux
@@ -43,5 +43,5 @@ jobs:
                   compiler: ${{ matrix.dc }}
 
             - name: Invoke Dub
-              run: dub -q run libsoundio-d:unit-tests
+              run: dub run libsoundio-d:unit-tests
 
