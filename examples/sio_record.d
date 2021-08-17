@@ -11,7 +11,13 @@ import core.stdc.stdlib;
 import core.stdc.string;
 import core.stdc.math;
 import core.stdc.errno;
-import core.sys.posix.unistd;
+
+version (Posix)
+    import core.sys.posix.unistd;
+else version(Windows)
+    import core.sys.windows.winbase;
+else
+    static assert(false);
 
 struct RecordContext {
     SoundIoRingBuffer* ring_buffer;
@@ -279,7 +285,12 @@ int main(int argc, char** argv) {
     // consider a better shutdown strategy.
     for (;;) {
         soundio_flush_events(soundio);
-        sleep(1);
+        version(Posix)
+            sleep(1);
+        else version(Windows)
+            Sleep(1000);
+        else
+            static assert(false);
         int fill_bytes = soundio_ring_buffer_fill_count(rc.ring_buffer);
         char* read_buf = soundio_ring_buffer_read_ptr(rc.ring_buffer);
         size_t amt = fwrite(read_buf, 1, fill_bytes, out_f);

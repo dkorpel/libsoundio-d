@@ -11,7 +11,14 @@ import core.stdc.stdarg;
 import core.stdc.stdlib;
 import core.stdc.string;
 import core.stdc.math;
-import core.sys.posix.unistd;
+
+version (Posix)
+    import core.sys.posix.unistd;
+else version(Windows)
+    import core.sys.windows.winbase;
+else
+    static assert(false);
+
 import core.stdc.stdint;
 
 private void panic(T...)(const(char)* format, T args) {
@@ -59,7 +66,7 @@ private void function(char* ptr, double sample) write_sample;
 private const(double) PI = 3.14159265358979323846264338328;
 private double seconds_offset = 0.0;
 private bool caused_underflow = false;
-private SoundIo* soundio = null;
+private SoundIo* soundio_handle = null;
 private double seconds_end = 9.0f;
 
 private void write_callback(SoundIoOutStream* outstream, int frame_count_min, int frame_count_max) {
@@ -70,11 +77,16 @@ private void write_callback(SoundIoOutStream* outstream, int frame_count_min, in
 
     if (!caused_underflow && seconds_offset >= 3.0) {
         caused_underflow = true;
-        sleep(3);
+        version(Posix)
+            sleep(3);
+        else version(Windows)
+            Sleep(3000);
+        else
+            static assert(false);
     }
 
     if (seconds_offset >= seconds_end) {
-        soundio_wakeup(soundio);
+        soundio_wakeup(soundio_handle);
         return;
     }
 
@@ -168,35 +180,35 @@ int main(int argc, char** argv) {
                     ~ "wave for 3 seconds, then the program should exit successfully.\n"
                     ~ "WASAPI does not report buffer underflows.\n");
 
-    if (!cast(bool) (soundio = soundio_create()))
+    if (!cast(bool) (soundio_handle = soundio_create()))
         panic("out of memory");
 
     int err = (backend == SoundIoBackendNone) ?
-        soundio_connect(soundio) : soundio_connect_backend(soundio, backend);
+        soundio_connect(soundio_handle) : soundio_connect_backend(soundio_handle, backend);
 
     if (err)
         panic("error connecting: %s", soundio_strerror(err));
 
-    soundio_flush_events(soundio);
+    soundio_flush_events(soundio_handle);
 
     int selected_device_index = -1;
     if (device_id) {
-        const int device_count = soundio_output_device_count(soundio);
+        const int device_count = soundio_output_device_count(soundio_handle);
         for (int i = 0; i < device_count; i += 1) {
-            SoundIoDevice* device = soundio_get_output_device(soundio, i);
+            SoundIoDevice* device = soundio_get_output_device(soundio_handle, i);
             if (strcmp(device.id, device_id) == 0 && device.is_raw == raw) {
                 selected_device_index = i;
                 break;
             }
         }
     } else {
-        selected_device_index = soundio_default_output_device_index(soundio);
+        selected_device_index = soundio_default_output_device_index(soundio_handle);
     }
 
     if (selected_device_index < 0)
         panic("Output device not found");
 
-    SoundIoDevice* device = soundio_get_output_device(soundio, selected_device_index);
+    SoundIoDevice* device = soundio_get_output_device(soundio_handle, selected_device_index);
     if (!device)
         panic("out of memory");
 
@@ -235,10 +247,10 @@ int main(int argc, char** argv) {
         panic("unable to start device: %s", soundio_strerror(err));
 
     while (seconds_offset < seconds_end)
-        soundio_wait_events(soundio);
+        soundio_wait_events(soundio_handle);
 
     soundio_outstream_destroy(outstream);
     soundio_device_unref(device);
-    soundio_destroy(soundio);
+    soundio_destroy(soundio_handle);
     return 0;
 }
