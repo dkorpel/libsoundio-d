@@ -1181,6 +1181,16 @@ int soundio_instream_get_latency (
     SoundIoInStream* instream,
     double* out_latency);
 
+
+// Note: those function declarations crash LDC when built with --combined
+version(LDC)
+    private enum LDC_predecl_workaround = true;
+else
+    private enum LDC_predecl_workaround = false;
+
+static if (!LDC_predecl_workaround)
+{
+
 struct SoundIoRingBuffer;
 
 /// A ring buffer is a single-reader single-writer lock-free fixed-size queue.
@@ -1219,3 +1229,4 @@ int soundio_ring_buffer_free_count (SoundIoRingBuffer* ring_buffer);
 /// Must be called by the writer.
 void soundio_ring_buffer_clear (SoundIoRingBuffer* ring_buffer);
 
+}
