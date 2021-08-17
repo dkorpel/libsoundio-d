@@ -25,6 +25,8 @@ version (SOUNDIO_HAVE_WASAPI) {
 
 public import soundio.dummy;
 
+package:
+
 union SoundIoBackendData {
     version (SOUNDIO_HAVE_JACK) {
         SoundIoJack jack;
@@ -169,5 +171,5 @@ struct SoundIoDevicePrivate {
 
 void soundio_destroy_devices_info(SoundIoDevicesInfo* devices_info);
 
-package immutable int SOUNDIO_MIN_SAMPLE_RATE = 8000;
-package immutable int SOUNDIO_MAX_SAMPLE_RATE = 5644800;
+immutable int SOUNDIO_MIN_SAMPLE_RATE = 8000;
+immutable int SOUNDIO_MAX_SAMPLE_RATE = 5644_800;

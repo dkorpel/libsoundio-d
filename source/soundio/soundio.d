@@ -13,6 +13,8 @@ import core.stdc.assert_;
 import core.stdc.stdio;
 import core.stdc.stdlib: qsort, free;
 
+package:
+
 private template VersionSwitch(string versionId, string option0, string option1) {
 	mixin("version("~versionId~") {enum VersionSwitch = "~option0~";} else {enum VersionSwitch = "~option1~";}");
 }

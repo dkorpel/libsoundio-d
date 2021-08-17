@@ -6,6 +6,8 @@ import soundio.util;
 import soundio.soundio_internal;
 import core.stdc.stdlib;
 
+package:
+
 struct SOUNDIO_LIST(Type) {
     Type *items;
     int length;

@@ -13,6 +13,8 @@ import soundio.atomics;
 import core.stdc.stdlib;
 import core.atomic;
 
+package:
+
 struct SoundIoRingBufferImpl {
     @disable this();
     @disable this(this);

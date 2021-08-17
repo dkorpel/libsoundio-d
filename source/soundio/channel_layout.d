@@ -8,6 +8,8 @@ import soundio.util;
 import core.stdc.stdio;
 import core.stdc.string: strlen;
 
+package:
+
 static SoundIoChannelLayout[26] builtin_channel_layouts = [
     {
         "Mono",

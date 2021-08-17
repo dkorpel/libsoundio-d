@@ -16,6 +16,8 @@ import core.stdc.string: strlen, strcmp, memcpy;
 
 import soundio.headers.jackheader;
 
+package:
+
 struct SoundIoDeviceJackPort {
     char* full_name;
     int full_name_len;

@@ -3,6 +3,8 @@ module soundio.config;
 
 extern(C): @nogc: nothrow: __gshared:
 
+package:
+
 enum SOUNDIO_VERSION_MAJOR = 2;
 enum SOUNDIO_VERSION_MINOR = 0;
 enum SOUNDIO_VERSION_PATCH = 0;
