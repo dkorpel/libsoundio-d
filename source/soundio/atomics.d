@@ -5,8 +5,6 @@ extern(C): @nogc: nothrow: __gshared:
 
 import core.atomic;
 
-package:
-
 // Simple wrappers around atomic values so that the compiler will catch it if
 // I accidentally use operators such as +, -, += on them.
 alias SoundIoAtomicLong = shared(long);

@@ -10,8 +10,6 @@ import core.stdc.stdlib: free;
 import core.stdc.string;
 import core.stdc.errno;
 
-package:
-
 // You may rely on the size of this struct as part of the API and ABI.
 struct SoundIoOsMirroredMemory {
     size_t capacity;
