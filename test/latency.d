@@ -50,7 +50,7 @@ private int pulse_frames_left = -1;
 private const(double) PI = 3.14159265358979323846264338328;
 private double seconds_offset = 0.0;
 
-private soundio.ring_buffer.SoundIoRingBuffer pulse_rb;
+private SoundIoRingBuffer* pulse_rb;
 
 private void write_time(SoundIoOutStream* outstream, double extra) {
     double latency;
@@ -60,9 +60,9 @@ private void write_time(SoundIoOutStream* outstream, double extra) {
     }
     double now = soundio_os_get_time();
     double audible_time = now + latency + extra;
-    double* write_ptr = cast(double*)soundio_ring_buffer_write_ptr(&pulse_rb);
+    double* write_ptr = cast(double*)soundio_ring_buffer_write_ptr(pulse_rb);
     *write_ptr = audible_time;
-    soundio_ring_buffer_advance_write_ptr(&pulse_rb, double.sizeof);
+    soundio_ring_buffer_advance_write_ptr(pulse_rb, double.sizeof);
 }
 
 private void write_callback(SoundIoOutStream* outstream, int frame_count_min, int frame_count_max) {
@@ -206,8 +206,9 @@ int main(int argc, char** argv) {
         soundio_panic("No suitable device format available.\n");
     }
 
-    if (cast(bool)(err = soundio_ring_buffer_init(&pulse_rb, 1024)))
-        soundio_panic("ring buffer init: %s", soundio_strerror(err));
+    pulse_rb = soundio_ring_buffer_create(null, 1024);
+    //if (cast(bool)(err = soundio_ring_buffer_init(&pulse_rb, 1024)))
+    //    soundio_panic("ring buffer init: %s", soundio_strerror(err));
 
     if (cast(bool)(err = soundio_outstream_open(outstream)))
         soundio_panic("unable to open device: %s", soundio_strerror(err));
@@ -221,9 +222,9 @@ int main(int argc, char** argv) {
     bool beep_on = true;
     int count = 0;
     for (;;) {
-        int fill_count = soundio_ring_buffer_fill_count(&pulse_rb);
+        int fill_count = soundio_ring_buffer_fill_count(pulse_rb);
         if (fill_count >= cast(int)double.sizeof) {
-            double* read_ptr = cast(double*)soundio_ring_buffer_read_ptr(&pulse_rb);
+            double* read_ptr = cast(double*)soundio_ring_buffer_read_ptr(pulse_rb);
             double audible_time = *read_ptr;
             while (audible_time > soundio_os_get_time()) {
                 // Burn the CPU while we wait for our precisely timed event.
@@ -238,7 +239,7 @@ int main(int argc, char** argv) {
             if (off_by > 0.0001)
                 printf_stderr("off by %f\n", off_by);
             beep_on = !beep_on;
-            soundio_ring_buffer_advance_read_ptr(&pulse_rb, double.sizeof);
+            soundio_ring_buffer_advance_read_ptr(pulse_rb, double.sizeof);
         }
     }
 
