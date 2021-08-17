@@ -24,12 +24,19 @@ jobs:
             - name: Run unittests
               run: dub run libsoundio-d:unit-tests
 
-            - name: Build examples
+            - name: Build examples and tests
               run: |
                 dub build libsoundio-d:sine
                 dub build libsoundio-d:list-devices
                 dub build libsoundio-d:microphone
                 dub build libsoundio-d:record
+                dub build libsoundio-d:backend-disconnect-recover
+                dub build libsoundio-d:latency
+                dub build libsoundio-d:overflow
+                dub build libsoundio-d:underflow
+
+            - name: Build with --combined
+              run: dub build --combined libsoundio-d:sine
     test-linux:
         name: Linux
         strategy:
@@ -57,3 +64,10 @@ jobs:
                 dub build libsoundio-d:list-devices
                 dub build libsoundio-d:microphone
                 dub build libsoundio-d:record
+                dub build libsoundio-d:backend-disconnect-recover
+                dub build libsoundio-d:latency
+                dub build libsoundio-d:overflow
+                dub build libsoundio-d:underflow
+
+            - name: Build with --combined
+              run: dub build --combined libsoundio-d:sine
