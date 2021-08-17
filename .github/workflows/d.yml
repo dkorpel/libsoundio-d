@@ -1,4 +1,4 @@
-name: Run unittests
+name: Run tests, build examples
 on:
   push:
     branches: [ master ]
@@ -7,7 +7,7 @@ on:
 
 jobs:
     test-windows:
-        name: Run unittests on windows
+        name: Windows
         strategy:
             matrix:
                 os: [windows-latest]
@@ -21,11 +21,17 @@ jobs:
               with:
                   compiler: ${{ matrix.dc }}
 
-            - name: Invoke Dub
+            - name: Run unittests
               run: dub run libsoundio-d:unit-tests
 
+            - name: Build examples
+              run: |
+                dub build libsoundio-d:sine
+                dub build libsoundio-d:list-devices
+                dub build libsoundio-d:microphone
+                dub build libsoundio-d:record
     test-linux:
-        name: Run unittests on linux
+        name: Linux
         strategy:
             matrix:
                 os: [ubuntu-latest]
@@ -42,6 +48,12 @@ jobs:
               with:
                   compiler: ${{ matrix.dc }}
 
-            - name: Invoke Dub
+            - name: Run unittests
               run: dub run libsoundio-d:unit-tests
 
+            - name: Build examples
+              run: |
+                dub build libsoundio-d:sine
+                dub build libsoundio-d:list-devices
+                dub build libsoundio-d:microphone
+                dub build libsoundio-d:record
