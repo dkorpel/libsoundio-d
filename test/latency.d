@@ -50,7 +50,7 @@ private int pulse_frames_left = -1;
 private const(double) PI = 3.14159265358979323846264338328;
 private double seconds_offset = 0.0;
 
-private libsoundio.ring_buffer.SoundIoRingBuffer pulse_rb;
+private soundio.ring_buffer.SoundIoRingBuffer pulse_rb;
 
 private void write_time(SoundIoOutStream* outstream, double extra) {
     double latency;

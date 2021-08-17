@@ -12,7 +12,7 @@ import soundio.atomics;
 import core.stdc.stdlib;
 import core.atomic;
 
-package struct SoundIoRingBuffer {
+struct SoundIoRingBuffer {
     SoundIoOsMirroredMemory mem;
     shared(size_t) write_offset; // was: SoundIoAtomicULong, but no 64-bit atomics supported on 32-bit windows
     shared(size_t) read_offset; // ditto

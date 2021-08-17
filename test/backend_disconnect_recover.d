@@ -11,7 +11,13 @@ import core.stdc.stdarg;
 import core.stdc.stdlib;
 import core.stdc.string;
 import core.stdc.math;
-import core.sys.posix.unistd;
+
+version (Posix)
+    import core.sys.posix.unistd;
+else version(Windows)
+    import core.sys.windows.winbase;
+else
+    static assert(false);
 
 private void panic(T...)(const(char)* format, T args) {
     printf_stderr(format, args);
@@ -94,7 +100,12 @@ int main(int argc, char** argv) {
 
     if (timeout > 0) {
         printf_stderr("OK sleeping for %d seconds\n", timeout);
-        sleep(timeout);
+        version(Posix)
+            sleep(timeout);
+        else version(Windows)
+            Sleep(timeout * 1000);
+        else
+            static assert(false);
     }
 
     printf_stderr("OK cleaned up. Reconnecting...\n");
