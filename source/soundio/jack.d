@@ -1,10 +1,13 @@
 /// Translated from C to D
 module soundio.jack;
 
-extern(C): @nogc: nothrow: __gshared:
+version(SOUNDIO_HAVE_JACK):
+@nogc nothrow:
+extern(C): __gshared:
+
 import core.stdc.config: c_long, c_ulong;
 
-import soundio.soundio_internal;
+import soundio.api;
 import soundio.os;
 import soundio.atomics;
 

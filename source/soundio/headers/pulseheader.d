@@ -1,6 +1,8 @@
 /// C declarations of PulseAudio that libsoundio uses
 module soundio.headers.pulseheader;
-extern(C): @nogc: nothrow: __gshared:
+@nogc nothrow:
+extern(C): __gshared:
+
 
 // mainloop-api.h
 struct pa_mainloop_api;

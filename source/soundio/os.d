@@ -1,9 +1,11 @@
 /// Translated from C to D
 module soundio.os;
 
-extern(C): @nogc: nothrow: __gshared:
+@nogc nothrow:
+extern(C): __gshared:
 
-public import soundio.soundio_internal;
+
+public import soundio.api;
 public import soundio.util;
 
 import core.stdc.stdlib: free;
@@ -17,7 +19,7 @@ struct SoundIoOsMirroredMemory {
     void* priv;
 }
 
-version (Windows) {
+version(Windows) {
     public import core.sys.windows.windows;
     public import core.sys.windows.mmsystem;
     public import core.sys.windows.objbase;
@@ -68,7 +70,7 @@ version(SOUNDIO_OS_KQUEUE) {
     public import core.sys.posix.sys.time;
 }
 
-version (OSX) {
+version(OSX) {
     public import mach.clock;
     public import mach.mach;
 }
@@ -97,7 +99,7 @@ struct SoundIoOsMutex {
     }
 }
 
-version (SOUNDIO_OS_KQUEUE) {
+version(SOUNDIO_OS_KQUEUE) {
     static const(uintptr_t) notify_ident = 1;
     struct SoundIoOsCond {
         int kq_id;
@@ -127,7 +129,7 @@ version(Windows) {
 } else {
     static bool initialized = false;
     static pthread_mutex_t init_mutex = PTHREAD_MUTEX_INITIALIZER;
-    version (OSX) {
+    version(OSX) {
         static clock_serv_t cclock;
     }
 }
@@ -139,7 +141,7 @@ double soundio_os_get_time() {
         ulong time;
         QueryPerformanceCounter(cast(LARGE_INTEGER*) &time);
         return time * win32_time_resolution;
-    } else version (OSX) {
+    } else version(OSX) {
         mach_timespec_t mts;
 
         kern_return_t err = clock_get_time(cclock, &mts);
@@ -336,7 +338,7 @@ SoundIoOsCond* soundio_os_cond_create() {
 version(Windows) {
     InitializeConditionVariable(&cond.id);
     InitializeCriticalSection(&cond.default_cs_id);
-} else version (SOUNDIO_OS_KQUEUE) {
+} else version(SOUNDIO_OS_KQUEUE) {
     cond.kq_id = kqueue();
     if (cond.kq_id == -1)
         return null;
@@ -374,7 +376,7 @@ void soundio_os_cond_destroy(SoundIoOsCond* cond) {
 
 version(Windows) {
     DeleteCriticalSection(&cond.default_cs_id);
-} else version (SOUNDIO_OS_KQUEUE) {
+} else version(SOUNDIO_OS_KQUEUE) {
     close(cond.kq_id);
 } else {
     if (cond.id_init) {
@@ -401,7 +403,7 @@ version(Windows) {
         WakeConditionVariable(&cond.id);
         LeaveCriticalSection(&cond.default_cs_id);
     }
-} else version (SOUNDIO_OS_KQUEUE) {
+} else version(SOUNDIO_OS_KQUEUE) {
     kevent kev;
     timespec timeout = [ 0, 0 ];
 
@@ -441,7 +443,7 @@ version(Windows) {
     SleepConditionVariableCS(&cond.id, target_cs, ms);
     if (!locked_mutex)
         LeaveCriticalSection(&cond.default_cs_id);
-} else version (SOUNDIO_OS_KQUEUE) {
+} else version(SOUNDIO_OS_KQUEUE) {
     kevent kev;
     kevent out_kev;
 
@@ -501,7 +503,7 @@ version(Windows) {
     SleepConditionVariableCS(&cond.id, target_cs, INFINITE);
     if (!locked_mutex)
         LeaveCriticalSection(&cond.default_cs_id);
-} else version (SOUNDIO_OS_KQUEUE) {
+} else version(SOUNDIO_OS_KQUEUE) {
     kevent kev;
     kevent out_kev;
 
@@ -549,7 +551,7 @@ version(Windows) {
     page_size = win32_system_info.dwAllocationGranularity;
 } else {
     page_size = cast(int) sysconf(_SC_PAGESIZE);
-    version (OSX) {
+    version(OSX) {
         host_get_clock_service(mach_host_self(), SYSTEM_CLOCK, &cclock);
     }
 }

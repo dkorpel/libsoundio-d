@@ -1,7 +1,9 @@
 /// Translated from C to D
 module soundio.atomics;
 
-extern(C): @nogc: nothrow: __gshared:
+@nogc nothrow:
+extern(C): __gshared:
+
 
 import core.atomic;
 

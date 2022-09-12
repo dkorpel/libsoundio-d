@@ -1,9 +1,11 @@
 module soundio.list;
 
-extern(C): @nogc: nothrow: __gshared:
+@nogc nothrow:
+extern(C): __gshared:
+
 
 import soundio.util;
-import soundio.soundio_internal;
+import soundio.api;
 import core.stdc.stdlib;
 
 package:

@@ -1,7 +1,9 @@
 /// Translated from C to D
 module soundio.channel_layout;
 
-extern(C): @nogc: nothrow: __gshared:
+@nogc nothrow:
+extern(C): __gshared:
+
 
 import soundio.soundio_private;
 import soundio.util;

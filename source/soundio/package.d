@@ -1,7 +1,7 @@
-/// Translated from C to D
+/**
+D translation of libsoundio
+*/
 module soundio;
-
-extern(C): @nogc: nothrow: __gshared:
 
 public {
 	import soundio.api;
@@ -18,7 +18,7 @@ private {
 	import soundio.os;
 	import soundio.ring_buffer;
 	import soundio.soundio;
-	import soundio.soundio_internal;
+	import soundio.api;
 	import soundio.soundio_private;
 	import soundio.util;
 }

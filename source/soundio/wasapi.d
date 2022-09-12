@@ -1,9 +1,12 @@
 /// Translated from C to D
 module soundio.wasapi;
 
-extern(C): @nogc: nothrow: __gshared:
+version(Windows):
+@nogc nothrow:
+extern(C): __gshared:
 
-import soundio.soundio_internal;
+
+import soundio.api;
 import soundio.soundio_private;
 import soundio.os;
 import soundio.list;
@@ -25,24 +28,6 @@ extern(Windows) {
 }
 
 private:
-
-/+
-import mmdeviceapi;
-import audioclient;
-import audiosessiontypes;
-import audiopolicy;
-version = INITGUID;
-version = CINTERFACE;
-version = COBJMACROS;
-version = CONST_VTABLE;
-import initguid;
-import audioclient;
-import endpointvolume;
-import mmdeviceapi;
-import mmreg;
-import functiondiscoverykeys_devpkey;
-import wasapi;
-+/
 
 enum AUDCLNT_STREAMFLAGS_AUTOCONVERTPCM = 0x80000000;
 enum AUDCLNT_STREAMFLAGS_SRC_DEFAULT_QUALITY = 0x08000000;
@@ -128,7 +113,7 @@ package struct SoundIoInStreamWasapi {
 
 enum E_NOTFOUND = 0x80070490;
 
-/+
+/*
 // In C++ mode, IsEqualGUID() takes its arguments by reference
 enum string IS_EQUAL_GUID(string a, string b) = ` IsEqualGUID(*(a), *(b))`;
 enum string IS_EQUAL_IID(string a, string b) = ` IsEqualIID((a), *(b))`;
@@ -145,7 +130,7 @@ enum IID_ISIMPLEAUDIOVOLUME =                (IID_ISimpleAudioVolume);
 enum CLSID_MMDEVICEENUMERATOR =              (CLSID_MMDeviceEnumerator);
 enum PKEY_DEVICE_FRIENDLYNAME =              (PKEY_Device_FriendlyName);
 enum PKEY_AUDIOENGINE_DEVICEFORMAT =         (PKEY_AudioEngine_DeviceFormat);
-+/
+*/
 
 // And some GUID are never implemented (Ignoring the INITGUID define)
 static const(CLSID) CLSID_MMDeviceEnumerator = CLSID(
@@ -776,15 +761,15 @@ static int refresh_devices(SoundIoPrivate* si) {
     if (FAILED(hr = IMMDeviceEnumerator_GetDefaultAudioEndpoint(siw.device_enumerator, eRender,
                     eMultimedia, &rd.default_render_device)))
     {
-        if(hr != E_NOTFOUND) {
+        if (hr != E_NOTFOUND) {
             deinit_refresh_devices(&rd);
-            if(hr == E_OUTOFMEMORY) {
+            if (hr == E_OUTOFMEMORY) {
                 return SoundIoError.NoMem;
             }
             return SoundIoError.OpeningDevice;
         }
     }
-    if(rd.default_render_device) {
+    if (rd.default_render_device) {
         if (rd.lpwstr) {
             CoTaskMemFree(rd.lpwstr);
             rd.lpwstr = null;
@@ -805,22 +790,22 @@ static int refresh_devices(SoundIoPrivate* si) {
     if (FAILED(hr = IMMDeviceEnumerator_GetDefaultAudioEndpoint(siw.device_enumerator, eCapture,
                     eMultimedia, &rd.default_capture_device)))
     {
-        if(hr != E_NOTFOUND) {
+        if (hr != E_NOTFOUND) {
             deinit_refresh_devices(&rd);
-            if(hr == E_OUTOFMEMORY) {
+            if (hr == E_OUTOFMEMORY) {
                 return SoundIoError.NoMem;
             }
             return SoundIoError.OpeningDevice;
         }
     }
-    if(rd.default_capture_device) {
+    if (rd.default_capture_device) {
         if (rd.lpwstr) {
             CoTaskMemFree(rd.lpwstr);
             rd.lpwstr = null;
         }
         if (FAILED(hr = IMMDevice_GetId(rd.default_capture_device, &rd.lpwstr))) {
             deinit_refresh_devices(&rd);
-            if(hr == E_OUTOFMEMORY) {
+            if (hr == E_OUTOFMEMORY) {
                 return SoundIoError.NoMem;
             }
             return SoundIoError.OpeningDevice;
@@ -836,7 +821,7 @@ static int refresh_devices(SoundIoPrivate* si) {
                     eAll, DEVICE_STATE_ACTIVE, &rd.collection)))
     {
         deinit_refresh_devices(&rd);
-        if(hr == E_OUTOFMEMORY) {
+        if (hr == E_OUTOFMEMORY) {
             return SoundIoError.NoMem;
         }
         return SoundIoError.OpeningDevice;
@@ -1107,12 +1092,12 @@ static int refresh_devices(SoundIoPrivate* si) {
             rd.device_shared.probe_error = SoundIoError.OpeningDevice;
             rd.device_shared = null;
         }
-        else if(rd.wave_format && (rd.wave_format.Format.wFormatTag != WAVE_FORMAT_EXTENSIBLE)) {
+        else if (rd.wave_format && (rd.wave_format.Format.wFormatTag != WAVE_FORMAT_EXTENSIBLE)) {
             rd.device_shared.probe_error = SoundIoError.OpeningDevice;
             rd.device_shared = null;
         }
 
-        if(rd.device_shared) {
+        if (rd.device_shared) {
             rd.device_shared.sample_rate_current = rd.wave_format.Format.nSamplesPerSec;
             rd.device_shared.current_format = from_wave_format_format(rd.wave_format);
 

@@ -1,25 +1,27 @@
 /// Translated from C to D
 module soundio.soundio_private;
 
-extern(C): @nogc: nothrow: __gshared:
+@nogc nothrow:
+extern(C): __gshared:
 
-public import soundio.soundio_internal;
+
+public import soundio.api;
 public import soundio.config;
 public import soundio.list;
 
-version (SOUNDIO_HAVE_JACK) {
+version(SOUNDIO_HAVE_JACK) {
     public import soundio.jack;
 }
-version (SOUNDIO_HAVE_PULSEAUDIO) {
+version(SOUNDIO_HAVE_PULSEAUDIO) {
     public import soundio.pulseaudio;
 }
-version (SOUNDIO_HAVE_ALSA) {
+version(SOUNDIO_HAVE_ALSA) {
     public import soundio.alsa;
 }
-version (SOUNDIO_HAVE_COREAUDIO) {
+version(SOUNDIO_HAVE_COREAUDIO) {
     public import soundio.coreaudio;
 }
-version (SOUNDIO_HAVE_WASAPI) {
+version(SOUNDIO_HAVE_WASAPI) {
     public import soundio.wasapi;
 }
 
@@ -27,80 +29,88 @@ public import soundio.dummy;
 
 package:
 
-union SoundIoBackendData {
-    version (SOUNDIO_HAVE_JACK) {
-        SoundIoJack jack;
+struct SoundIoBackendData {
+    union {
+        version(SOUNDIO_HAVE_JACK) {
+            SoundIoJack jack;
+        }
+        version(SOUNDIO_HAVE_PULSEAUDIO) {
+            SoundIoPulseAudio pulseaudio;
+        }
+        version(SOUNDIO_HAVE_ALSA) {
+            SoundIoAlsa alsa;
+        }
+        version(SOUNDIO_HAVE_COREAUDIO) {
+            SoundIoCoreAudio coreaudio;
+        }
+        version(SOUNDIO_HAVE_WASAPI) {
+            SoundIoWasapi wasapi;
+        }
+        SoundIoDummy dummy;
     }
-    version (SOUNDIO_HAVE_PULSEAUDIO) {
-        SoundIoPulseAudio pulseaudio;
-    }
-    version (SOUNDIO_HAVE_ALSA) {
-        SoundIoAlsa alsa;
-    }
-    version (SOUNDIO_HAVE_COREAUDIO) {
-        SoundIoCoreAudio coreaudio;
-    }
-    version (SOUNDIO_HAVE_WASAPI) {
-        SoundIoWasapi wasapi;
-    }
-    SoundIoDummy dummy;
 }
 
-union SoundIoDeviceBackendData {
-    version (SOUNDIO_HAVE_JACK) {
-        SoundIoDeviceJack jack;
+struct SoundIoDeviceBackendData {
+    union {
+        version(SOUNDIO_HAVE_JACK) {
+            SoundIoDeviceJack jack;
+        }
+        version(SOUNDIO_HAVE_PULSEAUDIO) {
+            SoundIoDevicePulseAudio pulseaudio;
+        }
+        version(SOUNDIO_HAVE_ALSA) {
+            SoundIoDeviceAlsa alsa;
+        }
+        version(SOUNDIO_HAVE_COREAUDIO) {
+            SoundIoDeviceCoreAudio coreaudio;
+        }
+        version(SOUNDIO_HAVE_WASAPI) {
+            SoundIoDeviceWasapi wasapi;
+        }
+        SoundIoDeviceDummy dummy;
     }
-    version (SOUNDIO_HAVE_PULSEAUDIO) {
-        SoundIoDevicePulseAudio pulseaudio;
-    }
-    version (SOUNDIO_HAVE_ALSA) {
-        SoundIoDeviceAlsa alsa;
-    }
-    version (SOUNDIO_HAVE_COREAUDIO) {
-        SoundIoDeviceCoreAudio coreaudio;
-    }
-    version (SOUNDIO_HAVE_WASAPI) {
-        SoundIoDeviceWasapi wasapi;
-    }
-    SoundIoDeviceDummy dummy;
 }
 
-union SoundIoOutStreamBackendData {
-    version (SOUNDIO_HAVE_JACK) {
-        SoundIoOutStreamJack jack;
+struct SoundIoOutStreamBackendData {
+    union {
+        version(SOUNDIO_HAVE_JACK) {
+            SoundIoOutStreamJack jack;
+        }
+        version(SOUNDIO_HAVE_PULSEAUDIO) {
+            SoundIoOutStreamPulseAudio pulseaudio;
+        }
+        version(SOUNDIO_HAVE_ALSA) {
+            SoundIoOutStreamAlsa alsa;
+        }
+        version(SOUNDIO_HAVE_COREAUDIO) {
+            SoundIoOutStreamCoreAudio coreaudio;
+        }
+        version(SOUNDIO_HAVE_WASAPI) {
+            SoundIoOutStreamWasapi wasapi;
+        }
+        SoundIoOutStreamDummy dummy;
     }
-    version (SOUNDIO_HAVE_PULSEAUDIO) {
-        SoundIoOutStreamPulseAudio pulseaudio;
-    }
-    version (SOUNDIO_HAVE_ALSA) {
-        SoundIoOutStreamAlsa alsa;
-    }
-    version (SOUNDIO_HAVE_COREAUDIO) {
-        SoundIoOutStreamCoreAudio coreaudio;
-    }
-    version (SOUNDIO_HAVE_WASAPI) {
-        SoundIoOutStreamWasapi wasapi;
-    }
-    SoundIoOutStreamDummy dummy;
 }
 
-union SoundIoInStreamBackendData {
-    version (SOUNDIO_HAVE_JACK) {
-        SoundIoInStreamJack jack;
+struct SoundIoInStreamBackendData {
+    union {
+        version(SOUNDIO_HAVE_JACK) {
+            SoundIoInStreamJack jack;
+        }
+        version(SOUNDIO_HAVE_PULSEAUDIO) {
+            SoundIoInStreamPulseAudio pulseaudio;
+        }
+        version(SOUNDIO_HAVE_ALSA) {
+            SoundIoInStreamAlsa alsa;
+        }
+        version(SOUNDIO_HAVE_COREAUDIO) {
+            SoundIoInStreamCoreAudio coreaudio;
+        }
+        version(SOUNDIO_HAVE_WASAPI) {
+            SoundIoInStreamWasapi wasapi;
+        }
+        SoundIoInStreamDummy dummy;
     }
-    version (SOUNDIO_HAVE_PULSEAUDIO) {
-        SoundIoInStreamPulseAudio pulseaudio;
-    }
-    version (SOUNDIO_HAVE_ALSA) {
-        SoundIoInStreamAlsa alsa;
-    }
-    version (SOUNDIO_HAVE_COREAUDIO) {
-        SoundIoInStreamCoreAudio coreaudio;
-    }
-    version (SOUNDIO_HAVE_WASAPI) {
-        SoundIoInStreamWasapi wasapi;
-    }
-    SoundIoInStreamDummy dummy;
 }
 
 alias SoundIoListDevicePtr = SOUNDIO_LIST!(SoundIoDevice*);

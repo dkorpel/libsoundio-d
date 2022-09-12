@@ -1,9 +1,12 @@
 /// Translated from C to D
 module soundio.alsa;
 
-extern(C): @nogc: nothrow: __gshared:
+version(SOUNDIO_HAVE_ALSA):
+@nogc nothrow:
+extern(C): __gshared:
 
-import soundio.soundio_internal;
+
+import soundio.api;
 import soundio.soundio_private;
 import soundio.os;
 import soundio.list;

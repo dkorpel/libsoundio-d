@@ -1,7 +1,9 @@
 /// Translated from C to D
 module soundio.config;
 
-extern(C): @nogc: nothrow: __gshared:
+@nogc nothrow:
+extern(C): __gshared:
+
 
 package:
 

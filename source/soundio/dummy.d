@@ -1,10 +1,12 @@
 /// Translated from C to D
 module soundio.dummy;
 
-extern(C): @nogc: nothrow: __gshared:
+@nogc nothrow:
+extern(C): __gshared:
+
 import core.stdc.config: c_long, c_ulong;
 
-import soundio.soundio_internal;
+import soundio.api;
 import soundio.os;
 import soundio.api;
 import soundio.atomics;

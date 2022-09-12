@@ -1,7 +1,9 @@
 /// Translated from C to D
 module soundio.ring_buffer;
 
-extern(C): @nogc: nothrow: __gshared:
+@nogc nothrow:
+extern(C): __gshared:
+
 import core.stdc.config: c_long, c_ulong;
 
 import soundio.api: SoundIoRingBuffer;

@@ -1,9 +1,12 @@
 /// Translated from C to D
 module soundio.pulseaudio;
 
-extern(C): @nogc: nothrow: __gshared:
+version(SOUNDIO_HAVE_PULSEAUDIO):
+@nogc nothrow:
+extern(C): __gshared:
 
-import soundio.soundio_internal;
+
+import soundio.api;
 import soundio.atomics;
 import soundio.util;
 import soundio.soundio_private;

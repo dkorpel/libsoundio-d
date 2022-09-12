@@ -1,7 +1,9 @@
 /// Translated from C to D
 module soundio.soundio;
 
-extern(C): @nogc: nothrow: __gshared:
+@nogc nothrow:
+extern(C): __gshared:
+
 
 import soundio.atomics;
 import soundio.soundio_private;
@@ -15,40 +17,29 @@ import core.stdc.stdlib: qsort, free;
 
 package:
 
-private template VersionSwitch(string versionId, string option0, string option1) {
-	mixin("version("~versionId~") {enum VersionSwitch = "~option0~";} else {enum VersionSwitch = "~option1~";}");
-}
+private extern(D) immutable SoundIoBackend[] available_backends = () {
+    SoundIoBackend[] result;
+    version(SOUNDIO_HAVE_JACK) result ~= SoundIoBackend.Jack;
+    version(SOUNDIO_HAVE_PULSEAUDIO) result ~= SoundIoBackend.PulseAudio;
+    version(SOUNDIO_HAVE_ALSA) result ~= SoundIoBackend.Alsa;
+    version(SOUNDIO_HAVE_COREAUDIO) result ~= SoundIoBackend.CoreAudio;
+    version(SOUNDIO_HAVE_WASAPI) result ~= SoundIoBackend.Wasapi;
+    return result;
+} ();
 
-private template VersionArr(string s, alias val) {
-    mixin(`version(` ~ s ~ `) {private enum hasVer = true;} else {private enum hasVer = false;}`);
-    static if (hasVer) {
-        enum typeof(val)[1] VersionArr = val;
-    } else {
-        enum typeof(val)[0] VersionArr = [];
-    }
-}
+alias backend_init_t = int function(SoundIoPrivate*);
 
-private extern(D) const(SoundIoBackend)[] available_backends =
-    VersionArr!("SOUNDIO_HAVE_JACK", SoundIoBackend.Jack) ~
-    VersionArr!("SOUNDIO_HAVE_PULSEAUDIO", SoundIoBackend.PulseAudio) ~
-    VersionArr!("SOUNDIO_HAVE_ALSA", SoundIoBackend.Alsa) ~
-    VersionArr!("SOUNDIO_HAVE_COREAUDIO", SoundIoBackend.CoreAudio) ~
-    VersionArr!("SOUNDIO_HAVE_WASAPI", SoundIoBackend.Wasapi) ~
-    [SoundIoBackend.Dummy];
-
-alias int function(SoundIoPrivate*) backend_init_t;
-immutable backend_init_t[7] backend_init_fns = [
-    null, // None backend
-    VersionSwitch!("SOUNDIO_HAVE_JACK", "&soundio_jack_init" , "null"),
-    VersionSwitch!("SOUNDIO_HAVE_PULSEAUDIO", "&soundio_pulseaudio_init" , "null"),
-    VersionSwitch!("SOUNDIO_HAVE_ALSA", "&soundio_alsa_init" , "null"),
-    VersionSwitch!("SOUNDIO_HAVE_COREAUDIO", "&soundio_coreaudio_init" , "null"),
-    VersionSwitch!("SOUNDIO_HAVE_WASAPI", "&soundio_wasapi_init" , "null"),
-    &soundio_dummy_init,
-];
-
-//SOUNDIO_MAKE_LIST_DEF(struct SoundIoDevice;*, SoundIoListDevicePtr, SOUNDIO_LIST_NOT_STATIC)
-//SOUNDIO_MAKE_LIST_DEF(struct SoundIoSampleRateRange;, SoundIoListSampleRateRange, SOUNDIO_LIST_NOT_STATIC)
+immutable backend_init_t[7] backend_init_fns = () {
+    backend_init_t[7] result = null;
+    result[0] = null; // None backend
+    version(SOUNDIO_HAVE_JACK) result[1] = &soundio_jack_init;
+    version(SOUNDIO_HAVE_PULSEAUDIO) result[2] = &soundio_pulseaudio_init;
+    version(SOUNDIO_HAVE_ALSA) result[3] = &soundio_alsa_init;
+    version(SOUNDIO_HAVE_COREAUDIO) result[4] = &soundio_coreaudio_init;
+    version(SOUNDIO_HAVE_WASAPI) result[5] = &soundio_wasapi_init;
+    result[6] = &soundio_dummy_init;
+    return result;
+} ();
 
 const(char)* soundio_strerror(int error) {
     switch (cast(SoundIoError)error) {

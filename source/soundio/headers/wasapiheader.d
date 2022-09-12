@@ -1,5 +1,7 @@
 /// C declarations of WASAPI that libsoundio uses
 module soundio.headers.wasapiheader;
+
+version(Windows):
 extern(Windows): @nogc: nothrow: __gshared:
 
 import core.sys.windows.windows;
@@ -445,10 +447,12 @@ static assert(WAVEFORMATEX.sizeof == 18);
 
 struct WAVEFORMATEXTENSIBLE {
     WAVEFORMATEX    Format;
-    union USamples {
-        WORD wValidBitsPerSample;
-        WORD wSamplesPerBlock;
-        WORD wReserved;
+    struct USamples {
+        union {
+            WORD wValidBitsPerSample;
+            WORD wSamplesPerBlock;
+            WORD wReserved;
+        }
     }
     USamples Samples;
     DWORD           dwChannelMask;

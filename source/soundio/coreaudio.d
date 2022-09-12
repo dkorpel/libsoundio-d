@@ -1,15 +1,18 @@
 /// Translated from C to D
 module soundio.coreaudio;
 
-extern(C): @nogc: nothrow: __gshared:
+version(OSX):
+@nogc nothrow:
+extern(C): __gshared:
 
-import soundio.soundio_internal;
+
+import soundio.api;
 import soundio.os;
 import soundio.list;
 import soundio.atomics;
 
-import coreaudio;
-import audiounit;
+//import coreaudio;
+//import audiounit;
 
 package struct SoundIoDeviceCoreAudio {
     AudioDeviceID device_id;

@@ -1,7 +1,9 @@
 /// C declarations of ALSA that libsoundio uses
 module soundio.headers.alsaheader;
 
-extern(C): @nogc: nothrow: __gshared:
+@nogc nothrow:
+extern(C): __gshared:
+
 
 import core.stdc.config: c_long, c_ulong;
 import core.sys.posix.poll;
