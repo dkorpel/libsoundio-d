@@ -8,12 +8,7 @@ targetPath "build"
 targetType "library"
 
 buildOptions "betterC"
-dflags "-preview=dip1000" "-preview=dip25"
-dflags "-preview=fieldwise"
-dflags "-preview=markdown"
-dflags "-preview=fixAliasThis"
-dflags "-preview=intpromote"
-dflags "-preview=dtorfields"
+dflags "-preview=dip1000"
 dflags "-mixin=build/mixin.d"
 
 sourcePaths // no default sourcepath
