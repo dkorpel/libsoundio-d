@@ -139,15 +139,15 @@ void soundio_destroy(SoundIo* soundio) {
     free(si);
 }
 
-static void do_nothing_cb(SoundIo* soundio) { }
-static void default_msg_callback(const(char)* msg) { }
+private void do_nothing_cb(SoundIo* soundio) { }
+private void default_msg_callback(const(char)* msg) { }
 
-static void default_backend_disconnect_cb(SoundIo* soundio, int err) {
+private void default_backend_disconnect_cb(SoundIo* soundio, int err) {
     soundio_panic("libsoundio: backend disconnected: %s", soundio_strerror(err));
 }
 
-static SoundIoAtomicFlag rtprio_seen = SoundIoAtomicFlag.init;
-static void default_emit_rtprio_warning() {
+private SoundIoAtomicFlag rtprio_seen = SoundIoAtomicFlag.init;
+private void default_emit_rtprio_warning() {
     if (!SOUNDIO_ATOMIC_FLAG_TEST_AND_SET(rtprio_seen)) {
         printf_stderr("warning: unable to set high priority thread: Operation not permitted\n");
         printf_stderr("See "
@@ -422,11 +422,11 @@ int soundio_outstream_end_write(SoundIoOutStream* outstream) {
     return si.outstream_end_write(si, os);
 }
 
-static void default_outstream_error_callback(SoundIoOutStream* os, int err) {
+private void default_outstream_error_callback(SoundIoOutStream* os, int err) {
     soundio_panic("libsoundio: %s", soundio_strerror(err));
 }
 
-static void default_underflow_callback(SoundIoOutStream* outstream) { }
+private void default_underflow_callback(SoundIoOutStream* outstream) { }
 
 SoundIoOutStream* soundio_outstream_create(SoundIoDevice* device) {
     SoundIoOutStreamPrivate* os = ALLOCATE!SoundIoOutStreamPrivate(1);
@@ -533,11 +533,11 @@ int soundio_outstream_set_volume(SoundIoOutStream* outstream, double volume) {
     return si.outstream_set_volume(si, os, volume);
 }
 
-static void default_instream_error_callback(SoundIoInStream* is_, int err) {
+private void default_instream_error_callback(SoundIoInStream* is_, int err) {
     soundio_panic("libsoundio: %s", soundio_strerror(err));
 }
 
-static void default_overflow_callback(SoundIoInStream* instream) { }
+private void default_overflow_callback(SoundIoInStream* instream) { }
 
 SoundIoInStream* soundio_instream_create(SoundIoDevice* device) {
     SoundIoInStreamPrivate* is_ = ALLOCATE!SoundIoInStreamPrivate(1);
@@ -672,7 +672,7 @@ SoundIoBackend soundio_get_backend(SoundIo* soundio, int index) {
     return available_backends[index];
 }
 
-static bool layout_contains(const(SoundIoChannelLayout)* available_layouts, int available_layouts_count, const(SoundIoChannelLayout)* target_layout) {
+private bool layout_contains(const(SoundIoChannelLayout)* available_layouts, int available_layouts_count, const(SoundIoChannelLayout)* target_layout) {
     for (int i = 0; i < available_layouts_count; i += 1) {
         const(SoundIoChannelLayout)* available_layout = &available_layouts[i];
         if (soundio_channel_layout_equal(target_layout, available_layout))
@@ -690,7 +690,7 @@ const(SoundIoChannelLayout)* soundio_best_matching_channel_layout(const(SoundIoC
     return null;
 }
 
-static int compare_layouts(const(void)* a, const(void)* b) {
+private int compare_layouts(const(void)* a, const(void)* b) {
     const(SoundIoChannelLayout)* layout_a = cast(const(SoundIoChannelLayout)*)a;
     const(SoundIoChannelLayout)* layout_b = cast(const(SoundIoChannelLayout)*)b;
     if (layout_a.channel_count > layout_b.channel_count)
@@ -737,7 +737,7 @@ bool soundio_device_supports_sample_rate(SoundIoDevice* device, int sample_rate)
     return false;
 }
 
-static int abs_diff_int(int a, int b) {
+private int abs_diff_int(int a, int b) {
     int x = a - b;
     return (x >= 0) ? x : -x;
 }

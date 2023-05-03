@@ -100,7 +100,7 @@ struct SoundIoOsMutex {
 }
 
 version(SOUNDIO_OS_KQUEUE) {
-    static const(uintptr_t) notify_ident = 1;
+    private const(uintptr_t) notify_ident = 1;
     struct SoundIoOsCond {
         int kq_id;
     }
@@ -123,18 +123,18 @@ version(SOUNDIO_OS_KQUEUE) {
 }
 
 version(Windows) {
-    static INIT_ONCE win32_init_once = INIT_ONCE_STATIC_INIT;
-    static double win32_time_resolution;
-    static SYSTEM_INFO win32_system_info;
+    private INIT_ONCE win32_init_once = INIT_ONCE_STATIC_INIT;
+    private double win32_time_resolution;
+    private SYSTEM_INFO win32_system_info;
 } else {
-    static bool initialized = false;
-    static pthread_mutex_t init_mutex = PTHREAD_MUTEX_INITIALIZER;
+    private bool initialized = false;
+    private pthread_mutex_t init_mutex = PTHREAD_MUTEX_INITIALIZER;
     version(OSX) {
-        static clock_serv_t cclock;
+        private clock_serv_t cclock;
     }
 }
 
-static int page_size;
+private int page_size;
 
 double soundio_os_get_time() {
     version(Windows) {
@@ -161,7 +161,7 @@ double soundio_os_get_time() {
 }
 
 version(Windows) {
-    extern(Windows) static DWORD run_win32_thread(LPVOID userdata) {
+    extern(Windows) private DWORD run_win32_thread(LPVOID userdata) {
         SoundIoOsThread* thread = cast(SoundIoOsThread*)userdata;
         HRESULT err = CoInitializeEx(null, COINIT_APARTMENTTHREADED);
         assert(err == S_OK);
@@ -170,11 +170,11 @@ version(Windows) {
         return 0;
     }
 } else {
-    static void assert_no_err(int err) {
+    private void assert_no_err(int err) {
         assert(!err);
     }
 
-    static void* run_pthread(void* userdata) {
+    private void* run_pthread(void* userdata) {
         SoundIoOsThread* thread = cast(SoundIoOsThread*)userdata;
         thread.run(thread.arg);
         return null;
@@ -539,7 +539,7 @@ version(Windows) {
 }
 }
 
-static int internal_init() {
+private int internal_init() {
 version(Windows) {
     ulong frequency;
     if (QueryPerformanceFrequency(cast(LARGE_INTEGER*) &frequency)) {
@@ -593,7 +593,7 @@ int soundio_os_page_size() {
     return page_size;
 }
 
-pragma(inline, true) static size_t ceil_dbl_to_size_t(double x) {
+pragma(inline, true) private size_t ceil_dbl_to_size_t(double x) {
     const(double) truncation = cast(size_t)x;
     return cast(size_t) (truncation + (truncation < x));
 }

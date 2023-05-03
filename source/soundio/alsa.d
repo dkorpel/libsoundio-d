@@ -103,7 +103,7 @@ package struct SoundIoInStreamAlsa {
 
 immutable snd_pcm_stream_t[2] stream_types = [SND_PCM_STREAM_PLAYBACK, SND_PCM_STREAM_CAPTURE];
 
-static snd_pcm_access_t[5] prioritized_access_types = [
+private snd_pcm_access_t[5] prioritized_access_types = [
     SND_PCM_ACCESS_MMAP_INTERLEAVED,
     SND_PCM_ACCESS_MMAP_NONINTERLEAVED,
     SND_PCM_ACCESS_MMAP_COMPLEX,
@@ -111,7 +111,7 @@ static snd_pcm_access_t[5] prioritized_access_types = [
     SND_PCM_ACCESS_RW_NONINTERLEAVED,
 ];
 
-static void wakeup_device_poll(SoundIoAlsa* sia) {
+private void wakeup_device_poll(SoundIoAlsa* sia) {
     ssize_t amt = write(sia.notify_pipe_fd[1], "a".ptr, 1);
     if (amt == -1) {
         assert(errno != EBADF);
@@ -122,7 +122,7 @@ static void wakeup_device_poll(SoundIoAlsa* sia) {
     }
 }
 
-static void wakeup_outstream_poll(SoundIoOutStreamAlsa* osa) {
+private void wakeup_outstream_poll(SoundIoOutStreamAlsa* osa) {
     ssize_t amt = write(osa.poll_exit_pipe_fd[1], "a".ptr, 1);
     if (amt == -1) {
         assert(errno != EBADF);
@@ -133,7 +133,7 @@ static void wakeup_outstream_poll(SoundIoOutStreamAlsa* osa) {
     }
 }
 
-static void destroy_alsa(SoundIoPrivate* si) {
+private void destroy_alsa(SoundIoPrivate* si) {
     SoundIoAlsa* sia = &si.backend_data.alsa;
 
     if (sia.thread) {
@@ -159,12 +159,12 @@ static void destroy_alsa(SoundIoPrivate* si) {
     close(sia.notify_fd);
 }
 
-pragma(inline, true) static snd_pcm_uframes_t ceil_dbl_to_uframes(double x) {
+pragma(inline, true) private snd_pcm_uframes_t ceil_dbl_to_uframes(double x) {
     const(double) truncation = cast(snd_pcm_uframes_t)x;
     return cast(snd_pcm_uframes_t) (truncation + (truncation < x));
 }
 
-static char* str_partition_on_char(char* str, char c) {
+private char* str_partition_on_char(char* str, char c) {
     if (!str)
         return null;
     while (*str) {
@@ -177,7 +177,7 @@ static char* str_partition_on_char(char* str, char c) {
     return null;
 }
 
-static snd_pcm_stream_t aim_to_stream(SoundIoDeviceAim aim) {
+private snd_pcm_stream_t aim_to_stream(SoundIoDeviceAim aim) {
     final switch (aim) {
         case SoundIoDeviceAim.Output: return SND_PCM_STREAM_PLAYBACK;
         case SoundIoDeviceAim.Input: return SND_PCM_STREAM_CAPTURE;
@@ -186,7 +186,7 @@ static snd_pcm_stream_t aim_to_stream(SoundIoDeviceAim aim) {
     //return SND_PCM_STREAM_PLAYBACK;
 }
 
-static SoundIoChannelId from_alsa_chmap_pos(uint pos) {
+private SoundIoChannelId from_alsa_chmap_pos(uint pos) {
     switch (/*cast(snd_pcm_chmap_position)*/ pos) {
         case SND_CHMAP_UNKNOWN: return SoundIoChannelId.Invalid;
         case SND_CHMAP_NA:      return SoundIoChannelId.Invalid;
@@ -230,7 +230,7 @@ static SoundIoChannelId from_alsa_chmap_pos(uint pos) {
     return SoundIoChannelId.Invalid;
 }
 
-static int to_alsa_chmap_pos(SoundIoChannelId channel_id) {
+private int to_alsa_chmap_pos(SoundIoChannelId channel_id) {
     switch (channel_id) {
         case SoundIoChannelId.FrontLeft:             return SND_CHMAP_FL;
         case SoundIoChannelId.FrontRight:            return SND_CHMAP_FR;
@@ -272,7 +272,7 @@ static int to_alsa_chmap_pos(SoundIoChannelId channel_id) {
     }
 }
 
-static void get_channel_layout(SoundIoChannelLayout* dest, snd_pcm_chmap_t* chmap) {
+private void get_channel_layout(SoundIoChannelLayout* dest, snd_pcm_chmap_t* chmap) {
     int channel_count = soundio_int_min(SOUNDIO_MAX_CHANNELS, chmap.channels);
     dest.channel_count = channel_count;
     for (int i = 0; i < channel_count; i += 1) {
@@ -283,7 +283,7 @@ static void get_channel_layout(SoundIoChannelLayout* dest, snd_pcm_chmap_t* chma
     soundio_channel_layout_detect_builtin(dest);
 }
 
-static int handle_channel_maps(SoundIoDevice* device, snd_pcm_chmap_query_t** maps) {
+private int handle_channel_maps(SoundIoDevice* device, snd_pcm_chmap_query_t** maps) {
     if (!maps)
         return 0;
 
@@ -313,7 +313,7 @@ static int handle_channel_maps(SoundIoDevice* device, snd_pcm_chmap_query_t** ma
     return 0;
 }
 
-static snd_pcm_format_t to_alsa_fmt(SoundIoFormat fmt) {
+private snd_pcm_format_t to_alsa_fmt(SoundIoFormat fmt) {
     switch (fmt) {
     case SoundIoFormat.S8:           return SND_PCM_FORMAT_S8;
     case SoundIoFormat.U8:           return SND_PCM_FORMAT_U8;
@@ -339,14 +339,14 @@ static snd_pcm_format_t to_alsa_fmt(SoundIoFormat fmt) {
     return SND_PCM_FORMAT_UNKNOWN;
 }
 
-static void test_fmt_mask(SoundIoDevice* device, const(snd_pcm_format_mask_t)* fmt_mask, SoundIoFormat fmt) {
+private void test_fmt_mask(SoundIoDevice* device, const(snd_pcm_format_mask_t)* fmt_mask, SoundIoFormat fmt) {
     if (snd_pcm_format_mask_test(fmt_mask, to_alsa_fmt(fmt))) {
         device.formats[device.format_count] = fmt;
         device.format_count += 1;
     }
 }
 
-static int set_access(snd_pcm_t* handle, snd_pcm_hw_params_t* hwparams, snd_pcm_access_t* out_access) {
+private int set_access(snd_pcm_t* handle, snd_pcm_hw_params_t* hwparams, snd_pcm_access_t* out_access) {
     for (int i = 0; i < prioritized_access_types.length; i += 1) {
         snd_pcm_access_t access = prioritized_access_types[i];
         int err = snd_pcm_hw_params_set_access(handle, hwparams, access);
@@ -360,7 +360,7 @@ static int set_access(snd_pcm_t* handle, snd_pcm_hw_params_t* hwparams, snd_pcm_
 }
 
 // this function does not override device->formats, so if you want it to, deallocate and set it to NULL
-static int probe_open_device(SoundIoDevice* device, snd_pcm_t* handle, int resample, int* out_channels_min, int* out_channels_max) {
+private int probe_open_device(SoundIoDevice* device, snd_pcm_t* handle, int resample, int* out_channels_min, int* out_channels_max) {
     SoundIoDevicePrivate* dev = cast(SoundIoDevicePrivate*)device;
     int err;
 
@@ -572,7 +572,7 @@ extern(D) int probe_device(SoundIoDevice* device, snd_pcm_chmap_query_t** maps) 
     return 0;
 }
 
-pragma(inline, true) static bool str_has_prefix(const(char)* big_str, const(char)* prefix) {
+pragma(inline, true) private bool str_has_prefix(const(char)* big_str, const(char)* prefix) {
     return strncmp(big_str, prefix, strlen(prefix)) == 0;
 }
 
@@ -881,7 +881,7 @@ extern(D) int refresh_devices(SoundIoPrivate* si) {
     return 0;
 }
 
-static void shutdown_backend(SoundIoPrivate* si, int err) {
+private void shutdown_backend(SoundIoPrivate* si, int err) {
     SoundIo* soundio = &si.pub;
     SoundIoAlsa* sia = &si.backend_data.alsa;
     soundio_os_mutex_lock(sia.mutex);
@@ -891,7 +891,7 @@ static void shutdown_backend(SoundIoPrivate* si, int err) {
     soundio_os_mutex_unlock(sia.mutex);
 }
 
-static bool copy_str(char* dest, const(char)* src, int buf_len) {
+private bool copy_str(char* dest, const(char)* src, int buf_len) {
     for (;;) {
         buf_len -= 1;
         if (buf_len <= 0)
@@ -906,7 +906,7 @@ static bool copy_str(char* dest, const(char)* src, int buf_len) {
     return true;
 }
 
-static void device_thread_run(void* arg) {
+private void device_thread_run(void* arg) {
     SoundIoPrivate* si = cast(SoundIoPrivate*)arg;
     SoundIoAlsa* sia = &si.backend_data.alsa;
 
@@ -1322,7 +1322,7 @@ void outstream_thread_run(void* arg) {
     }
 }
 
-static void instream_thread_run(void* arg) {
+private void instream_thread_run(void* arg) {
     SoundIoInStreamPrivate* is_ = cast(SoundIoInStreamPrivate*) arg;
     SoundIoInStream* instream = &is_.pub;
     SoundIoInStreamAlsa* isa = &is_.backend_data.alsa;
@@ -1399,7 +1399,7 @@ static void instream_thread_run(void* arg) {
     }
 }
 
-static int outstream_open_alsa(SoundIoPrivate* si, SoundIoOutStreamPrivate* os) {
+private int outstream_open_alsa(SoundIoPrivate* si, SoundIoOutStreamPrivate* os) {
     SoundIoOutStreamAlsa* osa = &os.backend_data.alsa;
     SoundIoOutStream* outstream = &os.pub;
     SoundIoDevice* device = outstream.device;
@@ -1584,7 +1584,7 @@ static int outstream_open_alsa(SoundIoPrivate* si, SoundIoOutStreamPrivate* os) 
     return 0;
 }
 
-static int outstream_start_alsa(SoundIoPrivate* si, SoundIoOutStreamPrivate* os) {
+private int outstream_start_alsa(SoundIoPrivate* si, SoundIoOutStreamPrivate* os) {
     SoundIoOutStreamAlsa* osa = &os.backend_data.alsa;
     SoundIo* soundio = &si.pub;
 
@@ -1597,7 +1597,7 @@ static int outstream_start_alsa(SoundIoPrivate* si, SoundIoOutStreamPrivate* os)
     return 0;
 }
 
-static int outstream_begin_write_alsa(SoundIoPrivate* si, SoundIoOutStreamPrivate* os, SoundIoChannelArea** out_areas, int* frame_count) {
+private int outstream_begin_write_alsa(SoundIoPrivate* si, SoundIoOutStreamPrivate* os, SoundIoChannelArea** out_areas, int* frame_count) {
     *out_areas = null;
     SoundIoOutStreamAlsa* osa = &os.backend_data.alsa;
     SoundIoOutStream* outstream = &os.pub;
@@ -1647,7 +1647,7 @@ static int outstream_begin_write_alsa(SoundIoPrivate* si, SoundIoOutStreamPrivat
     return 0;
 }
 
-static int outstream_end_write_alsa(SoundIoPrivate* si, SoundIoOutStreamPrivate* os) {
+private int outstream_end_write_alsa(SoundIoPrivate* si, SoundIoOutStreamPrivate* os) {
     SoundIoOutStreamAlsa* osa = &os.backend_data.alsa;
     SoundIoOutStream* outstream = &os.pub;
 
@@ -1674,13 +1674,13 @@ static int outstream_end_write_alsa(SoundIoPrivate* si, SoundIoOutStreamPrivate*
     return 0;
 }
 
-static int outstream_clear_buffer_alsa(SoundIoPrivate* si, SoundIoOutStreamPrivate* os) {
+private int outstream_clear_buffer_alsa(SoundIoPrivate* si, SoundIoOutStreamPrivate* os) {
     SoundIoOutStreamAlsa* osa = &os.backend_data.alsa;
     SOUNDIO_ATOMIC_FLAG_CLEAR(osa.clear_buffer_flag);
     return 0;
 }
 
-static int outstream_pause_alsa(SoundIoPrivate* si, SoundIoOutStreamPrivate* os, bool pause) {
+private int outstream_pause_alsa(SoundIoPrivate* si, SoundIoOutStreamPrivate* os, bool pause) {
     if (!si)
         return SoundIoError.Invalid;
 
@@ -1702,7 +1702,7 @@ static int outstream_pause_alsa(SoundIoPrivate* si, SoundIoOutStreamPrivate* os,
     return 0;
 }
 
-static int outstream_get_latency_alsa(SoundIoPrivate* si, SoundIoOutStreamPrivate* os, double* out_latency) {
+private int outstream_get_latency_alsa(SoundIoPrivate* si, SoundIoOutStreamPrivate* os, double* out_latency) {
     SoundIoOutStream* outstream = &os.pub;
     SoundIoOutStreamAlsa* osa = &os.backend_data.alsa;
     int err;
@@ -1717,7 +1717,7 @@ static int outstream_get_latency_alsa(SoundIoPrivate* si, SoundIoOutStreamPrivat
     return 0;
 }
 
-static void instream_destroy_alsa(SoundIoPrivate* si, SoundIoInStreamPrivate* is_) {
+private void instream_destroy_alsa(SoundIoPrivate* si, SoundIoInStreamPrivate* is_) {
     SoundIoInStreamAlsa* isa = &is_.backend_data.alsa;
 
     if (isa.thread) {
@@ -1741,7 +1741,7 @@ static void instream_destroy_alsa(SoundIoPrivate* si, SoundIoInStreamPrivate* is
     isa.sample_buffer = null;
 }
 
-static int instream_open_alsa(SoundIoPrivate* si, SoundIoInStreamPrivate* is_) {
+private int instream_open_alsa(SoundIoPrivate* si, SoundIoInStreamPrivate* is_) {
     SoundIoInStreamAlsa* isa = &is_.backend_data.alsa;
     SoundIoInStream* instream = &is_.pub;
     SoundIoDevice* device = instream.device;
@@ -1903,7 +1903,7 @@ static int instream_open_alsa(SoundIoPrivate* si, SoundIoInStreamPrivate* is_) {
     return 0;
 }
 
-static int instream_start_alsa(SoundIoPrivate* si, SoundIoInStreamPrivate* is_) {
+private int instream_start_alsa(SoundIoPrivate* si, SoundIoInStreamPrivate* is_) {
     SoundIoInStreamAlsa* isa = &is_.backend_data.alsa;
     SoundIo* soundio = &si.pub;
 
@@ -1918,7 +1918,7 @@ static int instream_start_alsa(SoundIoPrivate* si, SoundIoInStreamPrivate* is_) 
     return 0;
 }
 
-static int instream_begin_read_alsa(SoundIoPrivate* si, SoundIoInStreamPrivate* is_, SoundIoChannelArea** out_areas, int* frame_count) {
+private int instream_begin_read_alsa(SoundIoPrivate* si, SoundIoInStreamPrivate* is_, SoundIoChannelArea** out_areas, int* frame_count) {
     *out_areas = null;
     SoundIoInStreamAlsa* isa = &is_.backend_data.alsa;
     SoundIoInStream* instream = &is_.pub;
@@ -1985,7 +1985,7 @@ static int instream_begin_read_alsa(SoundIoPrivate* si, SoundIoInStreamPrivate* 
     return 0;
 }
 
-static int instream_end_read_alsa(SoundIoPrivate* si, SoundIoInStreamPrivate* is_) {
+private int instream_end_read_alsa(SoundIoPrivate* si, SoundIoInStreamPrivate* is_) {
     SoundIoInStreamAlsa* isa = &is_.backend_data.alsa;
 
     if (isa.access == SND_PCM_ACCESS_RW_INTERLEAVED) {
@@ -2005,7 +2005,7 @@ static int instream_end_read_alsa(SoundIoPrivate* si, SoundIoInStreamPrivate* is
     return 0;
 }
 
-static int instream_pause_alsa(SoundIoPrivate* si, SoundIoInStreamPrivate* is_, bool pause) {
+private int instream_pause_alsa(SoundIoPrivate* si, SoundIoInStreamPrivate* is_, bool pause) {
     SoundIoInStreamAlsa* isa = &is_.backend_data.alsa;
 
     if (isa.is_paused == pause)
@@ -2020,7 +2020,7 @@ static int instream_pause_alsa(SoundIoPrivate* si, SoundIoInStreamPrivate* is_, 
     return 0;
 }
 
-static int instream_get_latency_alsa(SoundIoPrivate* si, SoundIoInStreamPrivate* is_, double* out_latency) {
+private int instream_get_latency_alsa(SoundIoPrivate* si, SoundIoInStreamPrivate* is_, double* out_latency) {
     SoundIoInStream* instream = &is_.pub;
     SoundIoInStreamAlsa* isa = &is_.backend_data.alsa;
     int err;

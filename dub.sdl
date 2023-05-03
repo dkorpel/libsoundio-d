@@ -82,7 +82,7 @@ subPackage {
 	sourcePaths
 	sourceFiles "examples/sio_record.d"
 	dependency "libsoundio-d" version="*"
-	buildRequirements "allowWarnings" // statements after main-loop not reachable
+	buildRequirements "silenceWarnings" // statements after main-loop not reachable
 }
 
 subPackage {
@@ -92,7 +92,7 @@ subPackage {
 	sourcePaths
 	sourceFiles "examples/sio_microphone.d"
 	dependency "libsoundio-d" version="*"
-	buildRequirements "allowWarnings" // statement after main-loop not reachable
+	buildRequirements "silenceWarnings" // statement after main-loop not reachable
 }
 
 // Tests
@@ -112,7 +112,7 @@ subPackage {
 	sourcePaths
 	sourceFiles "test/latency.d"
 	dependency "libsoundio-d" version="*"
-	buildRequirements "allowWarnings" // statement after main-loop not reachable
+	buildRequirements "silenceWarnings" // statement after main-loop not reachable
 }
 
 subPackage {

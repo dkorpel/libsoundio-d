@@ -75,7 +75,7 @@ struct SoundIoInStreamJack {
     char*[SOUNDIO_MAX_CHANNELS] buf_ptrs;
 }
 
-static SoundIoAtomicFlag global_msg_callback_flag = SOUNDIO_ATOMIC_FLAG_INIT;
+private SoundIoAtomicFlag global_msg_callback_flag = SOUNDIO_ATOMIC_FLAG_INIT;
 
 struct SoundIoJackPort {
     const(char)* full_name;
@@ -97,7 +97,7 @@ struct SoundIoJackClient {
 
 alias SoundIoListJackClient = SOUNDIO_LIST!SoundIoJackClient;
 
-static void split_str(const(char)* input_str, int input_str_len, char c, const(char)** out_1, int* out_len_1, const(char)** out_2, int* out_len_2) {
+private void split_str(const(char)* input_str, int input_str_len, char c, const(char)** out_1, int* out_len_1, const(char)** out_2, int* out_len_2) {
     *out_1 = input_str;
     while (*input_str) {
         if (*input_str == c) {
@@ -110,7 +110,7 @@ static void split_str(const(char)* input_str, int input_str_len, char c, const(c
     }
 }
 
-static SoundIoJackClient* find_or_create_client(SoundIoListJackClient* clients, SoundIoDeviceAim aim, bool is_physical, const(char)* client_name, int client_name_len) {
+private SoundIoJackClient* find_or_create_client(SoundIoListJackClient* clients, SoundIoDeviceAim aim, bool is_physical, const(char)* client_name, int client_name_len) {
     for (int i = 0; i < clients.length; i += 1) {
         SoundIoJackClient* client = clients.ptr_at(i);
         if (client.is_physical == is_physical &&
@@ -131,7 +131,7 @@ static SoundIoJackClient* find_or_create_client(SoundIoListJackClient* clients, 
     return client;
 }
 
-static void destruct_device(SoundIoDevicePrivate* dp) {
+private void destruct_device(SoundIoDevicePrivate* dp) {
     SoundIoDeviceJack* dj = &dp.backend_data.jack;
     for (int i = 0; i < dj.port_count; i += 1) {
         SoundIoDeviceJackPort* djp = &dj.ports[i];
@@ -140,7 +140,7 @@ static void destruct_device(SoundIoDevicePrivate* dp) {
     free(dj.ports);
 }
 
-static int refresh_devices_bare(SoundIoPrivate* si) {
+private int refresh_devices_bare(SoundIoPrivate* si) {
     SoundIo* soundio = &si.pub;
     SoundIoJack* sij = &si.backend_data.jack;
 
@@ -160,7 +160,7 @@ static int refresh_devices_bare(SoundIoPrivate* si) {
         return SoundIoErrorNoMem;
     }
 
-    SoundIoListJackClient clients = SoundIoListJackClient.init; // todo: zero?
+    SoundIoListJackClient clients = SoundIoListJackClient.init; // TODO: zero?
     const(char)** port_name_ptr = port_names;
     for (; *port_name_ptr; port_name_ptr += 1) {
         const(char)* client_and_port_name = *port_name_ptr;
@@ -344,7 +344,7 @@ static int refresh_devices_bare(SoundIoPrivate* si) {
     return 0;
 }
 
-static int refresh_devices(SoundIoPrivate* si) {
+private int refresh_devices(SoundIoPrivate* si) {
     int err = SoundIoErrorInterrupted;
     while (err == SoundIoErrorInterrupted)
         err = refresh_devices_bare(si);
@@ -382,23 +382,23 @@ private extern(D) void my_flush_events(SoundIoPrivate* si, bool wait) {
     }
 }
 
-static void flush_events_jack(SoundIoPrivate* si) {
+private void flush_events_jack(SoundIoPrivate* si) {
     my_flush_events(si, false);
 }
 
-static void wait_events_jack(SoundIoPrivate* si) {
+private void wait_events_jack(SoundIoPrivate* si) {
     my_flush_events(si, false);
     my_flush_events(si, true);
 }
 
-static void wakeup_jack(SoundIoPrivate* si) {
+private void wakeup_jack(SoundIoPrivate* si) {
     SoundIoJack* sij = &si.backend_data.jack;
     soundio_os_mutex_lock(sij.mutex);
     soundio_os_cond_signal(sij.cond, sij.mutex);
     soundio_os_mutex_unlock(sij.mutex);
 }
 
-static void force_device_scan_jack(SoundIoPrivate* si) {
+private void force_device_scan_jack(SoundIoPrivate* si) {
     SoundIo* soundio = &si.pub;
     SoundIoJack* sij = &si.backend_data.jack;
     SOUNDIO_ATOMIC_FLAG_CLEAR(sij.refresh_devices_flag);
@@ -408,7 +408,7 @@ static void force_device_scan_jack(SoundIoPrivate* si) {
     soundio_os_mutex_unlock(sij.mutex);
 }
 
-static int outstream_process_callback(jack_nframes_t nframes, void* arg) {
+private int outstream_process_callback(jack_nframes_t nframes, void* arg) {
     SoundIoOutStreamPrivate* os = cast(SoundIoOutStreamPrivate*)arg;
     SoundIoOutStreamJack* osj = &os.backend_data.jack;
     SoundIoOutStream* outstream = &os.pub;
@@ -422,14 +422,14 @@ static int outstream_process_callback(jack_nframes_t nframes, void* arg) {
     return 0;
 }
 
-static void outstream_destroy_jack(SoundIoPrivate* is_, SoundIoOutStreamPrivate* os) {
+private void outstream_destroy_jack(SoundIoPrivate* is_, SoundIoOutStreamPrivate* os) {
     SoundIoOutStreamJack* osj = &os.backend_data.jack;
 
     jack_client_close(osj.client);
     osj.client = null;
 }
 
-static SoundIoDeviceJackPort* find_port_matching_channel(SoundIoDevice* device, SoundIoChannelId id) {
+private SoundIoDeviceJackPort* find_port_matching_channel(SoundIoDevice* device, SoundIoChannelId id) {
     SoundIoDevicePrivate* dev = cast(SoundIoDevicePrivate*)device;
     SoundIoDeviceJack* dj = &dev.backend_data.jack;
 
@@ -442,14 +442,14 @@ static SoundIoDeviceJackPort* find_port_matching_channel(SoundIoDevice* device, 
     return null;
 }
 
-static int outstream_xrun_callback(void* arg) {
+private int outstream_xrun_callback(void* arg) {
     SoundIoOutStreamPrivate* os = cast(SoundIoOutStreamPrivate*)arg;
     SoundIoOutStream* outstream = &os.pub;
     outstream.underflow_callback(outstream);
     return 0;
 }
 
-static int outstream_buffer_size_callback(jack_nframes_t nframes, void* arg) {
+private int outstream_buffer_size_callback(jack_nframes_t nframes, void* arg) {
     SoundIoOutStreamPrivate* os = cast(SoundIoOutStreamPrivate*)arg;
     SoundIoOutStreamJack* osj = &os.backend_data.jack;
     SoundIoOutStream* outstream = &os.pub;
@@ -461,7 +461,7 @@ static int outstream_buffer_size_callback(jack_nframes_t nframes, void* arg) {
     }
 }
 
-static int outstream_sample_rate_callback(jack_nframes_t nframes, void* arg) {
+private int outstream_sample_rate_callback(jack_nframes_t nframes, void* arg) {
     SoundIoOutStreamPrivate* os = cast(SoundIoOutStreamPrivate*)arg;
     SoundIoOutStream* outstream = &os.pub;
     if (nframes == cast(jack_nframes_t)outstream.sample_rate) {
@@ -472,17 +472,17 @@ static int outstream_sample_rate_callback(jack_nframes_t nframes, void* arg) {
     }
 }
 
-static void outstream_shutdown_callback(void* arg) {
+private void outstream_shutdown_callback(void* arg) {
     SoundIoOutStreamPrivate* os = cast(SoundIoOutStreamPrivate*)arg;
     SoundIoOutStream* outstream = &os.pub;
     outstream.error_callback(outstream, SoundIoErrorStreaming);
 }
 
-pragma(inline, true) static jack_nframes_t nframes_max(jack_nframes_t a, jack_nframes_t b) {
+pragma(inline, true) private jack_nframes_t nframes_max(jack_nframes_t a, jack_nframes_t b) {
     return (a >= b) ? a : b;
 }
 
-static int outstream_open_jack(SoundIoPrivate* si, SoundIoOutStreamPrivate* os) {
+private int outstream_open_jack(SoundIoPrivate* si, SoundIoOutStreamPrivate* os) {
     SoundIoJack* sij = &si.backend_data.jack;
     SoundIoOutStreamJack* osj = &os.backend_data.jack;
     SoundIoOutStream* outstream = &os.pub;
@@ -577,7 +577,7 @@ static int outstream_open_jack(SoundIoPrivate* si, SoundIoOutStreamPrivate* os) 
     return 0;
 }
 
-static int outstream_pause_jack(SoundIoPrivate* si, SoundIoOutStreamPrivate* os, bool pause) {
+private int outstream_pause_jack(SoundIoPrivate* si, SoundIoOutStreamPrivate* os, bool pause) {
     SoundIoJack* sij = &si.backend_data.jack;
 
     if (sij.is_shutdown)
@@ -586,7 +586,7 @@ static int outstream_pause_jack(SoundIoPrivate* si, SoundIoOutStreamPrivate* os,
     return SoundIoErrorIncompatibleBackend;
 }
 
-static int outstream_start_jack(SoundIoPrivate* si, SoundIoOutStreamPrivate* os) {
+private int outstream_start_jack(SoundIoPrivate* si, SoundIoOutStreamPrivate* os) {
     SoundIoOutStreamJack* osj = &os.backend_data.jack;
     SoundIoOutStream* outstream = &os.pub;
     SoundIoJack* sij = &si.backend_data.jack;
@@ -611,7 +611,7 @@ static int outstream_start_jack(SoundIoPrivate* si, SoundIoOutStreamPrivate* os)
     return 0;
 }
 
-static int outstream_begin_write_jack(SoundIoPrivate* si, SoundIoOutStreamPrivate* os, SoundIoChannelArea** out_areas, int* frame_count) {
+private int outstream_begin_write_jack(SoundIoPrivate* si, SoundIoOutStreamPrivate* os, SoundIoChannelArea** out_areas, int* frame_count) {
     SoundIoOutStreamJack* osj = &os.backend_data.jack;
 
     if (*frame_count != osj.frames_left)
@@ -622,38 +622,38 @@ static int outstream_begin_write_jack(SoundIoPrivate* si, SoundIoOutStreamPrivat
     return 0;
 }
 
-static int outstream_end_write_jack(SoundIoPrivate* si, SoundIoOutStreamPrivate* os) {
+private int outstream_end_write_jack(SoundIoPrivate* si, SoundIoOutStreamPrivate* os) {
     SoundIoOutStreamJack* osj = &os.backend_data.jack;
     osj.frames_left = 0;
     return 0;
 }
 
-static int outstream_clear_buffer_jack(SoundIoPrivate* si, SoundIoOutStreamPrivate* os) {
+private int outstream_clear_buffer_jack(SoundIoPrivate* si, SoundIoOutStreamPrivate* os) {
     return SoundIoErrorIncompatibleBackend;
 }
 
-static int outstream_get_latency_jack(SoundIoPrivate* si, SoundIoOutStreamPrivate* os, double* out_latency) {
+private int outstream_get_latency_jack(SoundIoPrivate* si, SoundIoOutStreamPrivate* os, double* out_latency) {
     SoundIoOutStreamJack* osj = &os.backend_data.jack;
     *out_latency = osj.hardware_latency;
     return 0;
 }
 
 
-static void instream_destroy_jack(SoundIoPrivate* si, SoundIoInStreamPrivate* is_) {
+private void instream_destroy_jack(SoundIoPrivate* si, SoundIoInStreamPrivate* is_) {
     SoundIoInStreamJack* isj = &is_.backend_data.jack;
 
     jack_client_close(isj.client);
     isj.client = null;
 }
 
-static int instream_xrun_callback(void* arg) {
+private int instream_xrun_callback(void* arg) {
     SoundIoInStreamPrivate* is_ = cast(SoundIoInStreamPrivate*)arg;
     SoundIoInStream* instream = &is_.pub;
     instream.overflow_callback(instream);
     return 0;
 }
 
-static int instream_buffer_size_callback(jack_nframes_t nframes, void* arg) {
+private int instream_buffer_size_callback(jack_nframes_t nframes, void* arg) {
     SoundIoInStreamPrivate* is_ = cast(SoundIoInStreamPrivate*)arg;
     SoundIoInStreamJack* isj = &is_.backend_data.jack;
     SoundIoInStream* instream = &is_.pub;
@@ -666,7 +666,7 @@ static int instream_buffer_size_callback(jack_nframes_t nframes, void* arg) {
     }
 }
 
-static int instream_sample_rate_callback(jack_nframes_t nframes, void* arg) {
+private int instream_sample_rate_callback(jack_nframes_t nframes, void* arg) {
     SoundIoInStreamPrivate* is_ = cast(SoundIoInStreamPrivate*)arg;
     SoundIoInStream* instream = &is_.pub;
     if (nframes == cast(jack_nframes_t)instream.sample_rate) {
@@ -677,13 +677,13 @@ static int instream_sample_rate_callback(jack_nframes_t nframes, void* arg) {
     }
 }
 
-static void instream_shutdown_callback(void* arg) {
+private void instream_shutdown_callback(void* arg) {
     SoundIoInStreamPrivate* is_ = cast(SoundIoInStreamPrivate*)arg;
     SoundIoInStream* instream = &is_.pub;
     instream.error_callback(instream, SoundIoErrorStreaming);
 }
 
-static int instream_process_callback(jack_nframes_t nframes, void* arg) {
+private int instream_process_callback(jack_nframes_t nframes, void* arg) {
     SoundIoInStreamPrivate* is_ = cast(SoundIoInStreamPrivate*)arg;
     SoundIoInStream* instream = &is_.pub;
     SoundIoInStreamJack* isj = &is_.backend_data.jack;
@@ -697,7 +697,7 @@ static int instream_process_callback(jack_nframes_t nframes, void* arg) {
     return 0;
 }
 
-static int instream_open_jack(SoundIoPrivate* si, SoundIoInStreamPrivate* is_) {
+private int instream_open_jack(SoundIoPrivate* si, SoundIoInStreamPrivate* is_) {
     SoundIoInStream* instream = &is_.pub;
     SoundIoInStreamJack* isj = &is_.backend_data.jack;
     SoundIoJack* sij = &si.backend_data.jack;
@@ -791,7 +791,7 @@ static int instream_open_jack(SoundIoPrivate* si, SoundIoInStreamPrivate* is_) {
     return 0;
 }
 
-static int instream_pause_jack(SoundIoPrivate* si, SoundIoInStreamPrivate* is_, bool pause) {
+private int instream_pause_jack(SoundIoPrivate* si, SoundIoInStreamPrivate* is_, bool pause) {
     SoundIoJack* sij = &si.backend_data.jack;
 
     if (sij.is_shutdown)
@@ -800,7 +800,7 @@ static int instream_pause_jack(SoundIoPrivate* si, SoundIoInStreamPrivate* is_, 
     return SoundIoErrorIncompatibleBackend;
 }
 
-static int instream_start_jack(SoundIoPrivate* si, SoundIoInStreamPrivate* is_) {
+private int instream_start_jack(SoundIoPrivate* si, SoundIoInStreamPrivate* is_) {
     SoundIoInStreamJack* isj = &is_.backend_data.jack;
     SoundIoInStream* instream = &is_.pub;
     SoundIoJack* sij = &si.backend_data.jack;
@@ -825,7 +825,7 @@ static int instream_start_jack(SoundIoPrivate* si, SoundIoInStreamPrivate* is_) 
     return 0;
 }
 
-static int instream_begin_read_jack(SoundIoPrivate* si, SoundIoInStreamPrivate* is_, SoundIoChannelArea** out_areas, int* frame_count) {
+private int instream_begin_read_jack(SoundIoPrivate* si, SoundIoInStreamPrivate* is_, SoundIoChannelArea** out_areas, int* frame_count) {
     SoundIoInStreamJack* isj = &is_.backend_data.jack;
 
     if (*frame_count != isj.frames_left)
@@ -836,19 +836,19 @@ static int instream_begin_read_jack(SoundIoPrivate* si, SoundIoInStreamPrivate* 
     return 0;
 }
 
-static int instream_end_read_jack(SoundIoPrivate* si, SoundIoInStreamPrivate* is_) {
+private int instream_end_read_jack(SoundIoPrivate* si, SoundIoInStreamPrivate* is_) {
     SoundIoInStreamJack* isj = &is_.backend_data.jack;
     isj.frames_left = 0;
     return 0;
 }
 
-static int instream_get_latency_jack(SoundIoPrivate* si, SoundIoInStreamPrivate* is_, double* out_latency) {
+private int instream_get_latency_jack(SoundIoPrivate* si, SoundIoInStreamPrivate* is_, double* out_latency) {
     SoundIoInStreamJack* isj = &is_.backend_data.jack;
     *out_latency = isj.hardware_latency;
     return 0;
 }
 
-static void notify_devices_change(SoundIoPrivate* si) {
+private void notify_devices_change(SoundIoPrivate* si) {
     SoundIo* soundio = &si.pub;
     SoundIoJack* sij = &si.backend_data.jack;
     SOUNDIO_ATOMIC_FLAG_CLEAR(sij.refresh_devices_flag);
@@ -858,7 +858,7 @@ static void notify_devices_change(SoundIoPrivate* si) {
     soundio_os_mutex_unlock(sij.mutex);
 }
 
-static int buffer_size_callback(jack_nframes_t nframes, void* arg) {
+private int buffer_size_callback(jack_nframes_t nframes, void* arg) {
     SoundIoPrivate* si = cast(SoundIoPrivate*)arg;
     SoundIoJack* sij = &si.backend_data.jack;
     sij.period_size = nframes;
@@ -866,7 +866,7 @@ static int buffer_size_callback(jack_nframes_t nframes, void* arg) {
     return 0;
 }
 
-static int sample_rate_callback(jack_nframes_t nframes, void* arg) {
+private int sample_rate_callback(jack_nframes_t nframes, void* arg) {
     SoundIoPrivate* si = cast(SoundIoPrivate*)arg;
     SoundIoJack* sij = &si.backend_data.jack;
     sij.sample_rate = nframes;
@@ -874,17 +874,17 @@ static int sample_rate_callback(jack_nframes_t nframes, void* arg) {
     return 0;
 }
 
-static void port_registration_callback(jack_port_id_t port_id, int reg, void* arg) {
+private void port_registration_callback(jack_port_id_t port_id, int reg, void* arg) {
     SoundIoPrivate* si = cast(SoundIoPrivate*)arg;
     notify_devices_change(si);
 }
 
-static void port_rename_calllback(jack_port_id_t port_id, const(char)* old_name, const(char)* new_name, void* arg) {
+private void port_rename_calllback(jack_port_id_t port_id, const(char)* old_name, const(char)* new_name, void* arg) {
     SoundIoPrivate* si = cast(SoundIoPrivate*)arg;
     notify_devices_change(si);
 }
 
-static void shutdown_callback(void* arg) {
+private void shutdown_callback(void* arg) {
     SoundIoPrivate* si = cast(SoundIoPrivate*)arg;
     SoundIo* soundio = &si.pub;
     SoundIoJack* sij = &si.backend_data.jack;
@@ -895,7 +895,7 @@ static void shutdown_callback(void* arg) {
     soundio_os_mutex_unlock(sij.mutex);
 }
 
-static void destroy_jack(SoundIoPrivate* si) {
+private void destroy_jack(SoundIoPrivate* si) {
     SoundIoJack* sij = &si.backend_data.jack;
 
     if (sij.client)

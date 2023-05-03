@@ -12,7 +12,7 @@ import core.stdc.string: strlen;
 
 package:
 
-static SoundIoChannelLayout[26] builtin_channel_layouts = [
+private SoundIoChannelLayout[26] builtin_channel_layouts = [
     {
         "Mono",
         1,
@@ -313,7 +313,7 @@ static SoundIoChannelLayout[26] builtin_channel_layouts = [
 
 enum CHANNEL_NAME_ALIAS_COUNT = 3;
 alias const(char)*[CHANNEL_NAME_ALIAS_COUNT] channel_names_t;
-static channel_names_t* channel_names = [
+private channel_names_t* channel_names = [
     ["(Invalid Channel)", null, null],
     ["Front Left", "FL", "front-left"],
     ["Front Right", "FR", "front-right"],
