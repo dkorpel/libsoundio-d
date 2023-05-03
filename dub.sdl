@@ -7,7 +7,6 @@ targetName "libsoundio-d"
 targetPath "build"
 targetType "library"
 
-buildOptions "betterC"
 dflags "-preview=dip1000"
 dflags "-mixin=build/mixin.d"
 
