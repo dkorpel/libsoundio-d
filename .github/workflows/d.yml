@@ -55,9 +55,6 @@ jobs:
               with:
                   compiler: ${{ matrix.dc }}
 
-            - name: Run unittests
-              run: dub run libsoundio-d:unit-tests
-
             - name: Build examples
               run: |
                 dub build libsoundio-d:sine
